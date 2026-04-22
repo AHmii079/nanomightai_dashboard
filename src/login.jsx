@@ -113,8 +113,6 @@ const LoginPage = () => {
       localStorage.setItem("username", data.username);
       localStorage.setItem("role", data.role);
 
-      setSuccess("Login successful! Redirecting...");
-
       // Redirect based on user role
       if (data.role === "admin" || data.role === "onboarding" || data.role === "qa") {
         setTimeout(() => {
