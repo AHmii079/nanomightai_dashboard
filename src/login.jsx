@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 
 const LoginPage = () => {
   const [formData, setFormData] = useState({
@@ -38,11 +38,11 @@ const LoginPage = () => {
     setLoading(true);
 
     try {
-      const response = await fetch('https://api.xlitecore.xdialnetworks.com/api/v1/auth/login', {
-        method: 'POST',
+      const response = await fetch("https://api.xlitecore.xdialnetworks.com/api/v1/auth/login", {
+        method: "POST",
         headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json',
+          accept: "application/json",
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           username: formData.username,
@@ -54,21 +54,23 @@ const LoginPage = () => {
       try {
         data = await response.json();
       } catch (parseError) {
-        throw new Error('Unable to process server response. Please try again later.');
+        throw new Error("Unable to process server response. Please try again later.");
       }
 
       // Handle different error scenarios
       if (!response.ok) {
         // Authentication errors (401 or 403)
         if (response.status === 401 || response.status === 403) {
-          const errorMessage = data.detail || 'Invalid username or password. Please check your credentials and try again.';
+          const errorMessage =
+            data.detail ||
+            "Invalid username or password. Please check your credentials and try again.";
           setError(errorMessage);
 
           // Clear any existing tokens
-          localStorage.removeItem('access_token');
-          localStorage.removeItem('user_id');
-          localStorage.removeItem('username');
-          localStorage.removeItem('role');
+          localStorage.removeItem("access_token");
+          localStorage.removeItem("user_id");
+          localStorage.removeItem("username");
+          localStorage.removeItem("role");
 
           // Reset form after a delay
           setTimeout(() => {
@@ -102,28 +104,32 @@ const LoginPage = () => {
 
       // Validate response data
       if (!data.access_token || !data.user_id || !data.role) {
-        throw new Error('Invalid server response. Please try again or contact support.');
+        throw new Error("Invalid server response. Please try again or contact support.");
       }
 
       // Store in localStorage only
-      localStorage.setItem('access_token', data.access_token);
-      localStorage.setItem('user_id', data.user_id);
-      localStorage.setItem('username', data.username);
-      localStorage.setItem('role', data.role);
+      localStorage.setItem("access_token", data.access_token);
+      localStorage.setItem("user_id", data.user_id);
+      localStorage.setItem("username", data.username);
+      localStorage.setItem("role", data.role);
 
-      setSuccess('Login successful! Redirecting...');
+      setSuccess("Login successful! Redirecting...");
 
       // Redirect based on user role
-      if (data.role === 'admin' || data.role === 'onboarding' || data.role === 'qa') {
+      if (data.role === "admin" || data.role === "onboarding" || data.role === "qa") {
         setTimeout(() => {
-          window.location.href = '/admin-dashboard';
+          window.location.href = "/admin-dashboard";
+        }, 1500);
+      } else if (data.role === "client") {
+        setTimeout(() => {
+          window.location.href = "/client-landing";
         }, 1500);
       } else {
         try {
           let clientId = data.user_id;
-          if (data.role === 'client_member') {
+          if (data.role === "client_member") {
             const empRes = await fetch("https://api.xlitecore.xdialnetworks.com/api/v1/client/campaigns/employer", {
-              headers: { 'Authorization': `Bearer ${data.access_token}` }
+              headers: { Authorization: `Bearer ${data.access_token}` }
             });
             if (empRes.ok) {
               const empData = await empRes.json();
@@ -132,7 +138,7 @@ const LoginPage = () => {
           }
           if (clientId) {
             const campRes = await fetch(`https://api.xlitecore.xdialnetworks.com/api/v1/client/campaigns/${clientId}`, {
-              headers: { 'Authorization': `Bearer ${data.access_token}` }
+              headers: { Authorization: `Bearer ${data.access_token}` }
             });
             if (campRes.ok) {
               const campData = await campRes.json();
@@ -150,14 +156,14 @@ const LoginPage = () => {
         
         // Fallback if no campaigns found or error
         setTimeout(() => {
-          window.location.href = '/dashboard?view=dashboard';
+          window.location.href = "/dashboard?view=dashboard";
         }, 1500);
       }
 
     } catch (err) {
       // Network errors
-      if (err.name === 'TypeError' && err.message.includes('fetch')) {
-        setError('Network error. Please check your internet connection and try again.');
+      if (err.name === "TypeError" && err.message.includes("fetch")) {
+        setError("Network error. Please check your internet connection and try again.");
       } else {
         setError(err.message || 'An unexpected error occurred. Please try again.');
       }
@@ -173,8 +179,8 @@ const LoginPage = () => {
   return (
     <>
       <style>{`
-        @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css');
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        @import url("https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css");
+        @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap");
 
         * {
           margin: 0;
@@ -183,11 +189,11 @@ const LoginPage = () => {
         }
 
         body {
-          font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-          background: #FFFFFF;
-          color: #111827;
+          font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
           line-height: 1.5;
           min-height: 100vh;
+          background: #080c14;
+          color: rgba(255, 255, 255, 0.92);
         }
         
         #root {
@@ -198,170 +204,104 @@ const LoginPage = () => {
 
         .login-page-wrapper {
           display: flex;
+          align-items: center;
+          justify-content: center;
           min-height: 100vh;
-          width: 100%;
-          flex: 1;
-        }
-
-        /* Left Side */
-        .login-left {
-          flex: 1;
-          background: linear-gradient(135deg, #1C44B2 0%, #17368E 100%);
-          color: white;
-          padding: 4rem 5rem;
-          display: flex;
-          flex-direction: column;
+          padding: 32px 20px;
           position: relative;
           overflow: hidden;
         }
 
-        .login-left::before {
-          content: '';
+        .login-page-wrapper::before,
+        .login-page-wrapper::after {
+          content: "";
           position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          background: radial-gradient(circle at top right, rgba(255,255,255,0.08) 0%, transparent 40%),
-                      radial-gradient(circle at bottom left, rgba(255,255,255,0.05) 0%, transparent 40%);
+          border-radius: 50%;
+          filter: blur(100px);
+          z-index: 0;
           pointer-events: none;
+        }
+
+        .login-page-wrapper::before {
+          width: 500px;
+          height: 500px;
+          top: -180px;
+          left: -120px;
+          background: rgba(10, 132, 255, 0.15);
+        }
+
+        .login-page-wrapper::after {
+          width: 360px;
+          height: 360px;
+          right: -100px;
+          bottom: -80px;
+          background: rgba(94, 92, 230, 0.12);
+        }
+
+        .login-card {
+          width: 100%;
+          max-width: 460px;
+          border-radius: 18px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          padding: 28px;
+          box-shadow: 0 2px 24px rgba(0, 0, 0, 0.4);
+          position: relative;
+          z-index: 1;
         }
 
         .login-logo {
           display: flex;
           align-items: center;
-          gap: 0.75rem;
-          margin-bottom: auto;
-          position: relative;
-          z-index: 2;
+          gap: 10px;
+          margin-bottom: 18px;
         }
 
         .login-logo-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
-          background: rgba(255, 255, 255, 0.15);
+          width: 36px;
+          height: 36px;
+          border-radius: 10px;
+          background: linear-gradient(135deg, #0a84ff, #5e5ce6);
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1.25rem;
-          border: 1px solid rgba(255,255,255,0.2);
+          font-size: 1rem;
+          box-shadow: 0 4px 16px rgba(10, 132, 255, 0.35);
         }
 
         .login-logo-text {
-          font-size: 1.375rem;
-          font-weight: 600;
-        }
-
-        .login-content {
-          margin-top: 5rem;
-          margin-bottom: auto;
-          max-width: 500px;
-          position: relative;
-          z-index: 2;
-        }
-
-        .login-content h1 {
-          font-size: 2.75rem;
+          font-size: 18px;
           font-weight: 700;
-          line-height: 1.2;
-          margin-bottom: 1.25rem;
+          letter-spacing: -0.4px;
         }
 
-        .login-content p.description {
-          font-size: 1.125rem;
-          color: rgba(255, 255, 255, 0.9);
-          margin-bottom: 3.5rem;
-          line-height: 1.6;
-        }
-
-        .features-list {
-          display: flex;
-          flex-direction: column;
-          gap: 1.75rem;
-        }
-
-        .feature-item {
-          display: flex;
-          align-items: flex-start;
-          gap: 1.25rem;
-        }
-
-        .feature-icon {
-          width: 44px;
-          height: 44px;
-          border-radius: 12px;
-          background: rgba(255, 255, 255, 0.1);
-          border: 1px solid rgba(255, 255, 255, 0.15);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 1.25rem;
-          flex-shrink: 0;
-        }
-
-        .feature-text {
-          display: flex;
-          flex-direction: column;
-          justify-content: center;
-        }
-
-        .feature-text h3 {
-          font-size: 1rem;
-          font-weight: 600;
-          margin-bottom: 0.25rem;
-        }
-
-        .feature-text p {
-          font-size: 0.875rem;
-          color: rgba(255, 255, 255, 0.75);
-          margin-bottom: 0;
-        }
-
-        .login-footer {
-          font-size: 0.875rem;
-          color: rgba(255, 255, 255, 0.7);
-          position: relative;
-          z-index: 2;
-        }
-
-        /* Right Side */
-        .login-right {
-          flex: 1;
-          background: #FFFFFF;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          padding: 4rem;
-        }
-
-        .login-form-container {
-          width: 100%;
-          max-width: 420px;
+        .login-logo-text span {
+          color: #0a84ff;
         }
 
         .login-form-header {
-          margin-bottom: 2.5rem;
+          margin-bottom: 18px;
         }
 
         .login-form-header h2 {
-          font-size: 2.25rem;
-          color: #111827;
+          font-size: 24px;
+          color: rgba(255, 255, 255, 0.92);
           font-weight: 600;
-          margin-bottom: 0.75rem;
-          letter-spacing: -0.025em;
+          margin-bottom: 6px;
+          letter-spacing: -0.2px;
         }
 
         .login-form-header p {
-          font-size: 1rem;
-          color: #6B7280;
-          line-height: 1.5;
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.5);
         }
 
         .login-form {
           display: flex;
           flex-direction: column;
-          gap: 1.25rem;
+          gap: 14px;
         }
 
         .form-group {
@@ -370,10 +310,15 @@ const LoginPage = () => {
           gap: 0.5rem;
         }
 
-        .form-label {
-          font-size: 0.875rem;
+        .form-label,
+        label.form-label,
+        .form-group .form-label {
+          font-size: 12px;
           font-weight: 600;
-          color: #374151;
+          color: #ffffff !important;
+          opacity: 1 !important;
+          text-transform: uppercase;
+          letter-spacing: 0.06em;
         }
 
         .input-wrapper {
@@ -384,25 +329,33 @@ const LoginPage = () => {
 
         .form-input {
           width: 100%;
-          padding: 0.875rem 1rem;
-          background: #F9FAFB;
-          border: 1px solid #E5E7EB;
-          border-radius: 8px;
-          font-size: 0.938rem;
-          color: #111827;
+          padding: 10px 12px;
+          background: rgba(255, 255, 255, 0.08);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 10px;
+          font-size: 13px;
+          color: rgba(255, 255, 255, 0.92);
           font-family: inherit;
           transition: all 0.2s ease;
         }
 
         .form-input:focus {
           outline: none;
-          background: #FFFFFF;
-          border-color: #2563EB;
-          box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+          border-color: rgba(255, 255, 255, 0.14);
+          box-shadow: 0 0 0 3px rgba(10, 132, 255, 0.12);
         }
 
         .form-input::placeholder {
-          color: #9CA3AF;
+          color: rgba(255, 255, 255, 0.28);
+        }
+
+        .form-input:-webkit-autofill,
+        .form-input:-webkit-autofill:hover,
+        .form-input:-webkit-autofill:focus {
+          -webkit-text-fill-color: rgba(255, 255, 255, 0.96) !important;
+          -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.08) inset !important;
+          box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.08) inset !important;
+          transition: background-color 9999s ease-in-out 0s;
         }
 
         .form-input::-ms-reveal,
@@ -421,7 +374,7 @@ const LoginPage = () => {
           right: 1rem;
           background: none;
           border: none;
-          color: #9CA3AF;
+          color: rgba(255, 255, 255, 0.5);
           cursor: pointer;
           font-size: 1.25rem;
           display: flex;
@@ -432,17 +385,17 @@ const LoginPage = () => {
         }
 
         .password-toggle:hover {
-          color: #6B7280;
+          color: rgba(255, 255, 255, 0.92);
         }
 
         .login-btn {
           width: 100%;
-          padding: 0.875rem;
-          background: #2563EB;
-          color: white;
+          padding: 10px 14px;
+          background: #0a84ff;
+          color: #fff;
           border: none;
-          border-radius: 8px;
-          font-size: 1rem;
+          border-radius: 10px;
+          font-size: 13px;
           font-weight: 600;
           cursor: pointer;
           transition: all 0.2s ease;
@@ -450,15 +403,17 @@ const LoginPage = () => {
           align-items: center;
           justify-content: center;
           gap: 0.5rem;
-          margin-top: 0.5rem;
+          margin-top: 2px;
+          box-shadow: 0 4px 16px rgba(10, 132, 255, 0.3);
         }
 
         .login-btn:hover:not(:disabled) {
-          background: #1D4ED8;
+          opacity: 0.88;
+          transform: translateY(-1px);
         }
 
         .login-btn:disabled {
-          background: #93C5FD;
+          opacity: 0.6;
           cursor: not-allowed;
         }
 
@@ -471,124 +426,51 @@ const LoginPage = () => {
           to { transform: rotate(360deg); }
         }
 
-        .help-box {
-          margin-top: 2rem;
-          padding: 1.25rem;
-          background: #EFF6FF;
-          border-radius: 8px;
-          color: #1E3A8A;
-          font-size: 0.875rem;
-          line-height: 1.5;
-        }
-
-        .help-box strong {
-          font-weight: 600;
-        }
-
         .error-message {
           display: flex;
-          padding: 0.875rem 1rem;
-          background-color: #FEF2F2;
-          border: 1px solid #FECACA;
+          padding: 10px 12px;
+          background-color: rgba(255, 69, 58, 0.12);
+          border: 1px solid rgba(255, 69, 58, 0.25);
           border-radius: 8px;
-          color: #DC2626;
-          font-size: 0.875rem;
+          color: #fca5a5;
+          font-size: 13px;
           font-weight: 500;
           align-items: center;
           gap: 0.5rem;
-          margin-bottom: 1.5rem;
+          margin-bottom: 14px;
         }
 
         .success-message {
           display: flex;
-          padding: 0.875rem 1rem;
-          background-color: #ECFDF5;
-          border: 1px solid #A7F3D0;
+          padding: 10px 12px;
+          background-color: rgba(48, 209, 88, 0.12);
+          border: 1px solid rgba(48, 209, 88, 0.25);
           border-radius: 8px;
-          color: #059669;
-          font-size: 0.875rem;
+          color: #86efac;
+          font-size: 13px;
           font-weight: 500;
           align-items: center;
           gap: 0.5rem;
-          margin-bottom: 1.5rem;
+          margin-bottom: 14px;
         }
 
-        @media (max-width: 992px) {
-          .login-page-wrapper {
-            flex-direction: column;
-          }
-          .login-left {
-            padding: 3rem 2rem;
-            min-height: auto;
-          }
-          .login-content {
-            margin-top: 3rem;
-            margin-bottom: 3rem;
-          }
-          .login-right {
-            padding: 3rem 2rem;
+        @media (max-width: 560px) {
+          .login-card {
+            padding: 22px 16px;
           }
         }
       `}</style>
 
       <div className="login-page-wrapper">
-        <div className="login-left">
+        <div className="login-card">
           <div className="login-logo">
-            <div className="login-logo-icon">
-              <i className="bi bi-telephone"></i>
-            </div>
-            <div className="login-logo-text">Xdial Networks</div>
-          </div>
-
-          <div className="login-content">
-            <h1>Campaign Management Dashboard</h1>
-            <p className="description">
-              Manage your operations, track campaigns, and optimize performance all in one place.
-            </p>
-
-            <div className="features-list">
-              <div className="feature-item">
-                <div className="feature-icon">
-                  <i className="bi bi-bar-chart"></i>
-                </div>
-                <div className="feature-text">
-                  <h3>Real-time Analytics</h3>
-                  <p>Track campaign performance live</p>
-                </div>
-              </div>
-
-              <div className="feature-item">
-                <div className="feature-icon">
-                  <i className="bi bi-people"></i>
-                </div>
-                <div className="feature-text">
-                  <h3>Agent Management</h3>
-                  <p>Monitor and manage your team</p>
-                </div>
-              </div>
-
-              <div className="feature-item">
-                <div className="feature-icon">
-                  <i className="bi bi-headset"></i>
-                </div>
-                <div className="feature-text">
-                  <h3>Total Support Tools</h3>
-                  <p>Complete suite of features</p>
-                </div>
-              </div>
+            <div className="login-logo-text">
+              Nanomight <span>AI</span>
             </div>
           </div>
-
-          <div className="login-footer">
-            © 2026 Xdial Networks. All rights reserved.
-          </div>
-        </div>
-
-        <div className="login-right">
-          <div className="login-form-container">
             <div className="login-form-header">
-              <h2>Sign in to Dashboard</h2>
-              <p>Enter your credentials to access the campaign management system</p>
+              <h2>Sign In</h2>
+              <p>Access your Nanomight AI workspace</p>
             </div>
 
             {error && (
@@ -634,7 +516,7 @@ const LoginPage = () => {
                     onChange={handleChange}
                     required
                     disabled={loading}
-                    style={{ paddingRight: '3rem' }}
+                    style={{ paddingRight: "3rem" }}
                   />
                   <button
                     type="button"
@@ -659,10 +541,6 @@ const LoginPage = () => {
               </button>
             </form>
 
-            <div className="help-box">
-              <strong>Need help?</strong> Contact your system administrator for login credentials or support.
-            </div>
-          </div>
         </div>
       </div>
     </>
