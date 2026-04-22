@@ -290,24 +290,6 @@ const ClientLanding = () => {
             </div>
           </div>
           <div className="cl-topbar-right">
-            {userRole === "client" && (
-              <button
-                className="cl-btn cl-btn-success"
-                onClick={() => (window.location.href = "/request-campaign")}
-              >
-                <i className="bi bi-plus-lg"></i>
-                Request Campaign
-              </button>
-            )}
-            {!isClientMember && (
-              <button
-                className="cl-btn cl-btn-primary"
-                onClick={() => (window.location.href = "/manage-team")}
-              >
-                <i className="bi bi-people-fill"></i>
-                Manage Team
-              </button>
-            )}
             <button className="cl-btn cl-btn-ghost" onClick={handleLogout}>
               <i className="bi bi-box-arrow-right"></i>
               Logout
