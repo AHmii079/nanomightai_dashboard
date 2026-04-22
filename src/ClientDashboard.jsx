@@ -2136,7 +2136,8 @@ const MedicareDashboard = () => {
             left: 0,
             right: 0,
             bottom: 0,
-            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            backdropFilter: "blur(4px)",
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
@@ -2147,13 +2148,14 @@ const MedicareDashboard = () => {
         >
           <div
             style={{
-              backgroundColor: "white",
+              backgroundColor: "#0f172a",
+              border: "1px solid rgba(255,255,255,0.08)",
               borderRadius: "12px",
               maxWidth: "700px",
               width: "100%",
               maxHeight: "80vh",
               overflow: "auto",
-              boxShadow: "0 4px 20px rgba(0, 0, 0, 0.15)",
+              boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)",
             }}
             onClick={(e) => e.stopPropagation()}
           >
@@ -2161,13 +2163,13 @@ const MedicareDashboard = () => {
             <div
               style={{
                 padding: "20px 24px",
-                borderBottom: "1px solid #e5e5e5",
+                borderBottom: "1px solid rgba(255,255,255,0.08)",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "space-between",
                 position: "sticky",
                 top: 0,
-                backgroundColor: "white",
+                backgroundColor: "#0f172a",
                 borderTopLeftRadius: "12px",
                 borderTopRightRadius: "12px",
                 zIndex: 1,
@@ -2179,7 +2181,7 @@ const MedicareDashboard = () => {
                     margin: 0,
                     fontSize: "18px",
                     fontWeight: 600,
-                    color: "#333",
+                    color: "#f1f5f9",
                   }}
                 >
                   Call Transcript
@@ -2188,36 +2190,36 @@ const MedicareDashboard = () => {
                   style={{
                     margin: "4px 0 0 0",
                     fontSize: "13px",
-                    color: "#666",
+                    color: "#94a3b8",
                   }}
                 >
-                  Call ID: {selectedCallRecord.id}
+                  Call ID: <span style={{color: "#60a5fa"}}>{selectedCallRecord.id}</span>
                 </p>
               </div>
               <button
                 onClick={handleCloseTranscriptModal}
                 style={{
                   border: "none",
-                  backgroundColor: "transparent",
-                  fontSize: "24px",
+                  backgroundColor: "rgba(30, 41, 59, 0.5)",
+                  fontSize: "20px",
                   cursor: "pointer",
-                  color: "#666",
+                  color: "#94a3b8",
                   padding: "0",
                   width: "32px",
                   height: "32px",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  borderRadius: "4px",
+                  borderRadius: "8px",
                   transition: "all 0.2s",
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = "#f0f0f0";
-                  e.currentTarget.style.color = "#333";
+                  e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)";
+                  e.currentTarget.style.color = "#f1f5f9";
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = "transparent";
-                  e.currentTarget.style.color = "#666";
+                  e.currentTarget.style.backgroundColor = "rgba(30, 41, 59, 0.5)";
+                  e.currentTarget.style.color = "#94a3b8";
                 }}
               >
                 <i className="bi bi-x-lg"></i>
@@ -2229,18 +2231,19 @@ const MedicareDashboard = () => {
               {/* Call Information */}
               <div
                 style={{
-                  backgroundColor: "#f8f9fa",
+                  backgroundColor: "rgba(30, 41, 59, 0.5)",
+                  border: "1px solid rgba(255,255,255,0.05)",
                   borderRadius: "8px",
                   padding: "16px",
-                  marginBottom: "20px",
+                  marginBottom: "24px",
                 }}
               >
                 <h4
                   style={{
-                    margin: "0 0 12px 0",
+                    margin: "0 0 16px 0",
                     fontSize: "14px",
                     fontWeight: 600,
-                    color: "#333",
+                    color: "#e2e8f0",
                   }}
                 >
                   Call Information
@@ -2250,14 +2253,14 @@ const MedicareDashboard = () => {
                   style={{
                     display: "grid",
                     gridTemplateColumns: "1fr 1fr",
-                    gap: "12px",
+                    gap: "16px",
                   }}
                 >
                   <div>
                     <div
                       style={{
                         fontSize: "12px",
-                        color: "#666",
+                        color: "#64748b",
                         marginBottom: "4px",
                       }}
                     >
@@ -2267,7 +2270,7 @@ const MedicareDashboard = () => {
                       style={{
                         fontSize: "14px",
                         fontWeight: 500,
-                        color: "#333",
+                        color: "#f1f5f9",
                       }}
                     >
                       {selectedCallRecord.phone}
@@ -2277,7 +2280,7 @@ const MedicareDashboard = () => {
                     <div
                       style={{
                         fontSize: "12px",
-                        color: "#666",
+                        color: "#64748b",
                         marginBottom: "4px",
                       }}
                     >
@@ -2304,7 +2307,7 @@ const MedicareDashboard = () => {
                     <div
                       style={{
                         fontSize: "12px",
-                        color: "#666",
+                        color: "#64748b",
                         marginBottom: "4px",
                       }}
                     >
@@ -2314,7 +2317,7 @@ const MedicareDashboard = () => {
                       style={{
                         fontSize: "14px",
                         fontWeight: 500,
-                        color: "#333",
+                        color: "#f1f5f9",
                       }}
                     >
                       {selectedCallRecord.timestamp}
@@ -2330,23 +2333,24 @@ const MedicareDashboard = () => {
                     margin: "0 0 12px 0",
                     fontSize: "14px",
                     fontWeight: 600,
-                    color: "#333",
+                    color: "#e2e8f0",
                     display: "flex",
                     alignItems: "center",
-                    gap: "6px",
+                    gap: "8px",
                   }}
                 >
-                  <i className="bi bi-file-text"></i>
+                  <i className="bi bi-file-text" style={{color: "#64748b"}}></i>
                   Transcript
                 </h4>
                 <div
                   style={{
-                    backgroundColor: "#f8f9fa",
+                    backgroundColor: "rgba(15, 23, 42, 0.5)",
+                    border: "1px solid rgba(255,255,255,0.05)",
                     borderRadius: "8px",
                     padding: "16px",
                     fontSize: "14px",
                     lineHeight: "1.6",
-                    color: "#333",
+                    color: "#cbd5e1",
                     maxHeight: "400px",
                     overflowY: "auto",
                     whiteSpace: "pre-wrap",
@@ -2362,12 +2366,12 @@ const MedicareDashboard = () => {
             <div
               style={{
                 padding: "16px 24px",
-                borderTop: "1px solid #e5e5e5",
+                borderTop: "1px solid rgba(255,255,255,0.08)",
                 display: "flex",
                 justifyContent: "flex-end",
                 position: "sticky",
                 bottom: 0,
-                backgroundColor: "white",
+                backgroundColor: "#0f172a",
                 borderBottomLeftRadius: "12px",
                 borderBottomRightRadius: "12px",
               }}
@@ -2377,19 +2381,19 @@ const MedicareDashboard = () => {
                 style={{
                   padding: "8px 16px",
                   borderRadius: "6px",
-                  border: "1px solid #ddd",
-                  backgroundColor: "white",
-                  color: "#333",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  backgroundColor: "rgba(30, 41, 59, 0.7)",
+                  color: "#e2e8f0",
                   fontSize: "14px",
                   fontWeight: 500,
                   cursor: "pointer",
                   transition: "all 0.2s",
                 }}
                 onMouseOver={(e) => {
-                  e.currentTarget.style.backgroundColor = "#f0f0f0";
+                  e.currentTarget.style.backgroundColor = "rgba(255,255,255,0.1)";
                 }}
                 onMouseOut={(e) => {
-                  e.currentTarget.style.backgroundColor = "white";
+                  e.currentTarget.style.backgroundColor = "rgba(30, 41, 59, 0.7)";
                 }}
               >
                 Close
