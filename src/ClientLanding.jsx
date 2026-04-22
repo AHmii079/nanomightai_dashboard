@@ -463,7 +463,7 @@ const ClientLanding = () => {
                         (window.location.href = `/dashboard?campaign_id=${item.id}&view=dashboard`)
                       }
                     >
-                      View Dashboard
+                      Go to Dashboard
                       <i className="bi bi-arrow-right"></i>
                     </button>
                   </div>
