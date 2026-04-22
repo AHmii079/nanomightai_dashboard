@@ -1646,7 +1646,7 @@ const MedicareDashboard = () => {
                   display: none;
                 }
               `}</style>
-              <div 
+              <div
                 className="hide-scrollbar"
                 style={{
                   display: "flex",
@@ -1657,31 +1657,6 @@ const MedicareDashboard = () => {
                   scrollbarWidth: "none", // Firefox
                   msOverflowStyle: "none", // IE and Edge
               }}>
-                {/* All Calls Pill */}
-              <button
-                onClick={() => setSelectedOutcomes([])}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "flex-start",
-                  gap: "2px",
-                  padding: "12px 16px",
-                  borderRadius: "8px",
-                  border: selectedOutcomes.length === 0 ? "1px solid #3b82f6" : "1px solid rgba(255,255,255,0.06)",
-                  background: selectedOutcomes.length === 0 ? "rgba(15, 23, 42, 0.8)" : "rgba(15, 23, 42, 0.6)",
-                  cursor: "pointer",
-                  flexShrink: 0,
-                  fontFamily: "inherit",
-                  minWidth: "100px",
-                }}
-              >
-                <span style={{ fontSize: "18px", fontWeight: 700, color: selectedOutcomes.length === 0 ? "#60a5fa" : "#f1f5f9" }}>
-                  {totalCalls >= 1000 ? (totalCalls / 1000).toFixed(1) + "k" : totalCalls}
-                </span>
-                <span style={{ fontSize: "12px", fontWeight: 500, color: "#94a3b8", whiteSpace: "nowrap", marginTop: "2px" }}>All Calls</span>
-                <span style={{ fontSize: "11px", fontWeight: 700, color: "#60a5fa", marginTop: "4px" }}>100%</span>
-              </button>
-
               {outcomes.map((outcome) => {
                 const isSelected = selectedOutcomes.includes(outcome.label);
                 return (
