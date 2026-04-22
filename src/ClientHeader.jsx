@@ -48,7 +48,7 @@ export default function ClientHeader({
             <i className="bi bi-telephone-forward-fill"></i>
           </div>
           <span className="sidebar-brand-text">
-            Funnel <span className="sidebar-brand-accent">AI</span>
+            Nanomight <span className="sidebar-brand-accent">AI</span>
           </span>
         </div>
 

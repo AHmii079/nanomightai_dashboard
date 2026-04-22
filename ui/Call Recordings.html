@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Funnel AI — Call Recordings</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+
+body{font-family:'Inter',-apple-system,sans-serif;min-height:100vh;overflow-x:hidden;transition:background .4s,color .4s;}
+
+body.dark{
+  --bg:#080c14;--bg2:#0d1220;
+  --surface:rgba(255,255,255,0.05);--surface-hov:rgba(255,255,255,0.08);
+  --border:rgba(255,255,255,0.08);--border-strong:rgba(255,255,255,0.14);
+  --text:rgba(255,255,255,0.92);--text2:rgba(255,255,255,0.5);--text3:rgba(255,255,255,0.28);
+  --accent:#0A84FF;--accent-dim:rgba(10,132,255,0.15);
+  --sidebar-bg:rgba(255,255,255,0.04);--topbar-bg:rgba(8,12,20,0.88);
+  --card-shadow:0 2px 24px rgba(0,0,0,0.4);--row-hov:rgba(255,255,255,0.04);--scrub:rgba(255,255,255,0.06);
+  --player-bg:rgba(10,132,255,0.12);--waveform:#0A84FF;
+}
+body.light{
+  --bg:#f0f3f8;--bg2:#e4e9f2;
+  --surface:rgba(255,255,255,0.7);--surface-hov:rgba(255,255,255,0.9);
+  --border:rgba(0,0,0,0.07);--border-strong:rgba(0,0,0,0.12);
+  --text:rgba(0,0,0,0.88);--text2:rgba(0,0,0,0.45);--text3:rgba(0,0,0,0.25);
+  --accent:#0A84FF;--accent-dim:rgba(10,132,255,0.1);
+  --sidebar-bg:rgba(255,255,255,0.6);--topbar-bg:rgba(240,243,248,0.88);
+  --card-shadow:0 2px 16px rgba(0,0,0,0.08);--row-hov:rgba(0,0,0,0.025);--scrub:rgba(0,0,0,0.05);
+  --player-bg:rgba(10,132,255,0.08);--waveform:#0A84FF;
+}
+
+body{background:var(--bg);color:var(--text);}
+
+.blob-wrap{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;}
+.blob{position:absolute;border-radius:50%;filter:blur(100px);animation:bdrift 14s ease-in-out infinite alternate;}
+body.dark .blob1{width:600px;height:600px;background:rgba(10,132,255,0.1);top:-200px;left:-100px;}
+body.dark .blob2{width:400px;height:400px;background:rgba(94,92,230,0.08);bottom:-100px;right:-100px;animation-delay:-6s;}
+body.light .blob1{width:600px;height:600px;background:rgba(10,132,255,0.06);top:-200px;left:-100px;}
+body.light .blob2{width:400px;height:400px;background:rgba(94,92,230,0.05);bottom:-100px;right:-100px;animation-delay:-6s;}
+@keyframes bdrift{0%{transform:translate(0,0)}100%{transform:translate(50px,40px)}}
+
+.app{display:flex;min-height:100vh;position:relative;z-index:1;}
+
+/* SIDEBAR */
+.sidebar{width:230px;flex-shrink:0;background:var(--sidebar-bg);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto;}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:28px 22px 24px;border-bottom:1px solid var(--border);}
+.logo-icon{width:34px;height:34px;background:linear-gradient(135deg,#0A84FF,#5E5CE6);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 16px rgba(10,132,255,0.35);}
+.logo-name{font-size:17px;font-weight:700;letter-spacing:-.4px;color:var(--text);}
+.logo-name span{color:#0A84FF;}
+.sidebar-section{padding:16px 12px 8px;}
+.sidebar-label{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;padding:0 10px 8px;}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;cursor:pointer;font-size:13.5px;font-weight:500;color:var(--text2);transition:all .18s;margin-bottom:2px;}
+.nav-item:hover{background:var(--surface-hov);color:var(--text);}
+.nav-item.active{background:var(--accent-dim);color:var(--accent);}
+.sidebar-footer{margin-top:auto;padding:16px 12px;border-top:1px solid var(--border);}
+.user-chip{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;transition:background .18s;}
+.user-chip:hover{background:var(--surface-hov);}
+.avatar{width:32px;height:32px;background:linear-gradient(135deg,#0A84FF,#5E5CE6);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0;}
+.user-name{font-size:13px;font-weight:600;color:var(--text);}
+.user-role{font-size:11px;color:var(--text3);}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;min-width:0;}
+
+/* TOPBAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:0 28px;height:60px;background:var(--topbar-bg);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:50;}
+.topbar-left{display:flex;align-items:center;gap:12px;}
+.page-title{font-size:16px;font-weight:700;color:var(--text);letter-spacing:-.3px;}
+.record-count{font-size:12px;color:var(--text2);background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-weight:500;}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.icon-btn{width:36px;height:36px;background:var(--surface);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text2);transition:all .18s;}
+.icon-btn:hover{background:var(--surface-hov);color:var(--text);}
+.export-btn{display:flex;align-items:center;gap:6px;padding:7px 14px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .18s;box-shadow:0 4px 16px rgba(10,132,255,0.3);}
+.export-btn:hover{opacity:.88;transform:translateY(-1px);}
+
+/* CONTENT */
+.content{padding:24px 28px;flex:1;}
+
+/* STATS ROW */
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:22px;}
+.stat-card{background:var(--surface);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:18px;padding:20px;transition:all .2s;box-shadow:var(--card-shadow);}
+.stat-card:hover{background:var(--surface-hov);transform:translateY(-1px);}
+.stat-label{font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.stat-val{font-size:28px;font-weight:800;letter-spacing:-1px;color:var(--text);}
+.stat-sub{font-size:12px;color:var(--text3);margin-top:4px;}
+.stat-pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:20px;margin-top:6px;}
+.pill-green{background:rgba(48,209,88,0.15);color:#30D158;}
+.pill-blue{background:rgba(10,132,255,0.15);color:#0A84FF;}
+.pill-amber{background:rgba(255,159,10,0.15);color:#FF9F0A;}
+
+/* CMD BAR */
+.cmd-bar{display:flex;align-items:center;background:var(--surface);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:16px;padding:6px 8px;box-shadow:var(--card-shadow);margin-bottom:16px;transition:border-color .2s,box-shadow .2s;}
+.cmd-bar:focus-within{border-color:var(--border-strong);box-shadow:var(--card-shadow),0 0 0 3px var(--accent-dim);}
+.cmd-segment{display:flex;align-items:center;gap:8px;padding:7px 14px;flex:1;min-width:0;position:relative;}
+.cmd-segment+.cmd-segment::before{content:'';position:absolute;left:0;top:20%;height:60%;width:1px;background:var(--border);}
+.cmd-seg-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);white-space:nowrap;flex-shrink:0;}
+.cmd-input{background:none;border:none;outline:none;font-size:13.5px;color:var(--text);font-family:inherit;width:100%;min-width:0;}
+.cmd-input::placeholder{color:var(--text3);}
+.cmd-date{background:none;border:none;outline:none;font-size:13px;color:var(--text2);font-family:inherit;cursor:pointer;min-width:110px;}
+.cmd-date::-webkit-calendar-picker-indicator{opacity:.4;cursor:pointer;}
+.cmd-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;padding-left:8px;}
+.cmd-pill-btn{display:flex;align-items:center;gap:5px;padding:7px 13px;border-radius:10px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .18s;white-space:nowrap;border:1px solid transparent;}
+.cmd-pill-btn.ghost{background:var(--scrub);color:var(--text2);border-color:var(--border);}
+.cmd-pill-btn.ghost:hover{border-color:var(--accent);color:var(--accent);}
+.cmd-pill-btn.solid{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(10,132,255,0.3);}
+
+/* TABS */
+.tabs-row{display:flex;align-items:center;gap:4px;margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:4px;width:fit-content;backdrop-filter:blur(20px);}
+.tab{display:flex;align-items:center;gap:7px;padding:8px 18px;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--text2);}
+.tab:hover{color:var(--text);}
+.tab.active{background:var(--accent);color:#fff;box-shadow:0 4px 14px rgba(10,132,255,0.3);}
+
+/* NOW PLAYING BAR */
+.now-playing{
+  background:var(--player-bg);
+  border:1px solid rgba(10,132,255,0.25);
+  border-radius:16px;
+  padding:14px 20px;
+  margin-bottom:16px;
+  display:flex;align-items:center;gap:16px;
+  backdrop-filter:blur(20px);
+  animation:slideDown .3s cubic-bezier(.16,1,.3,1);
+}
+@keyframes slideDown{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+
+.np-info{flex:1;min-width:0;}
+.np-phone{font-size:14px;font-weight:700;color:var(--text);font-family:'SF Mono','Fira Code',monospace;}
+.np-meta{font-size:11px;color:var(--text2);margin-top:2px;}
+
+.np-controls{display:flex;align-items:center;gap:10px;}
+.np-play-btn{width:36px;height:36px;background:var(--accent);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#fff;transition:all .18s;flex-shrink:0;box-shadow:0 4px 14px rgba(10,132,255,0.4);}
+.np-play-btn:hover{transform:scale(1.08);}
+
+.np-timeline{flex:1;display:flex;flex-direction:column;gap:5px;}
+.np-scrubber{width:100%;height:4px;background:var(--border);border-radius:4px;cursor:pointer;position:relative;overflow:visible;}
+.np-fill{height:100%;border-radius:4px;background:var(--accent);transition:width .1s linear;position:relative;}
+.np-fill::after{content:'';position:absolute;right:-5px;top:50%;transform:translateY(-50%);width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--bg);}
+.np-times{display:flex;justify-content:space-between;font-size:11px;color:var(--text3);font-family:'SF Mono','Fira Code',monospace;}
+
+/* WAVEFORM */
+.waveform{display:flex;align-items:center;gap:2px;height:32px;flex-shrink:0;}
+.wbar{width:3px;border-radius:2px;background:var(--waveform);opacity:.4;animation:wave 1.2s ease-in-out infinite alternate;}
+.wbar.playing{opacity:1;}
+@keyframes wave{0%{transform:scaleY(.3)}100%{transform:scaleY(1)}}
+
+/* TABLE */
+.table-card{background:var(--surface);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:var(--card-shadow);}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid var(--border);}
+.table-title{font-size:14px;font-weight:600;color:var(--text);}
+.table-meta{font-size:12px;color:var(--text3);}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 16px;text-align:left;font-size:11px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.07em;background:var(--scrub);border-bottom:1px solid var(--border);cursor:pointer;user-select:none;white-space:nowrap;}
+thead th:hover{color:var(--text2);}
+tbody tr{border-bottom:1px solid var(--border);transition:background .15s;cursor:pointer;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--row-hov);}
+tbody tr.playing-row{background:var(--player-bg);}
+td{padding:11px 16px;font-size:13px;color:var(--text);white-space:nowrap;}
+
+.time-cell{font-family:'SF Mono','Fira Code',monospace;font-size:12.5px;color:var(--text2);}
+.phone-cell{font-family:'SF Mono','Fira Code',monospace;font-weight:600;}
+.dur-cell{font-size:12.5px;color:var(--text2);}
+.size-cell{font-size:12px;color:var(--text3);}
+.ext-cell{font-size:12px;color:var(--accent);font-weight:500;}
+
+.action-wrap{display:flex;align-items:center;gap:8px;}
+.play-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--accent);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:600;font-family:inherit;cursor:pointer;transition:all .18s;box-shadow:0 3px 12px rgba(10,132,255,0.25);}
+.play-btn:hover{opacity:.85;transform:translateY(-1px);}
+.play-btn.active{background:rgba(48,209,88,0.9);}
+.dl-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;background:var(--scrub);border:1px solid var(--border);border-radius:8px;font-size:12px;font-weight:600;color:var(--text2);font-family:inherit;cursor:pointer;transition:all .18s;}
+.dl-btn:hover{border-color:var(--accent);color:var(--accent);}
+
+/* DURATION VIEW */
+.dur-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.dur-card{background:var(--surface);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:var(--card-shadow);transition:all .2s;}
+.dur-card:hover{background:var(--surface-hov);transform:translateY(-1px);}
+.dur-card-top{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.dur-card-phone{font-family:'SF Mono','Fira Code',monospace;font-size:13px;font-weight:600;color:var(--text);}
+.dur-card-time{font-size:11px;color:var(--text3);}
+.dur-bar-bg{height:6px;background:var(--border);border-radius:4px;overflow:hidden;margin-bottom:8px;}
+.dur-bar-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,#0A84FF,#5E5CE6);}
+.dur-card-meta{display:flex;justify-content:space-between;font-size:11.5px;color:var(--text2);}
+.dur-card-dur{font-weight:700;color:var(--text);}
+
+/* PAGINATION */
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-top:1px solid var(--border);}
+.page-info{font-size:12px;color:var(--text3);}
+.page-btns{display:flex;gap:6px;}
+.page-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);border-radius:8px;background:var(--scrub);font-size:12px;font-weight:600;color:var(--text2);cursor:pointer;transition:all .18s;font-family:inherit;}
+.page-btn:hover{border-color:var(--accent);color:var(--accent);}
+.page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border-strong);border-radius:4px;}
+
+/* TWEAK PANEL */
+.tweak-panel{position:fixed;bottom:24px;right:24px;width:260px;background:var(--surface);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border:1px solid var(--border-strong);border-radius:18px;padding:18px;z-index:100;box-shadow:var(--card-shadow);display:none;}
+.tweak-panel.open{display:block;animation:modalUp .25s cubic-bezier(.16,1,.3,1);}
+@keyframes modalUp{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+.tweak-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;}
+.tweak-row{margin-bottom:12px;}
+.tweak-row label{font-size:11px;font-weight:600;color:var(--text2);display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:.06em;}
+.tweak-select{width:100%;padding:8px 10px;background:var(--scrub);border:1px solid var(--border);border-radius:9px;font-size:13px;font-family:inherit;color:var(--text);outline:none;cursor:pointer;}
+</style>
+</head>
+<body class="dark" id="app-root">
+<div class="blob-wrap"><div class="blob blob1"></div><div class="blob blob2"></div></div>
+<div id="react-root"></div>
+
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ─── DATA ─────────────────────────────────────────────
+function genRecordings(n) {
+  const exts = ['703007','703008','703009','703010'];
+  const rows = [];
+  for (let i=0;i<n;i++) {
+    const hh = 16 - Math.floor(i/60);
+    const mm = (50 - i) < 0 ? 59 + (50-i) : 50 - i;
+    const ss = Math.floor(Math.random()*60);
+    const durS = Math.floor(Math.random()*120)+3;
+    const durM = Math.floor(durS/60);
+    const durR = durS%60;
+    const sizeKb = Math.floor(durS * 18 + Math.random()*80);
+    rows.push({
+      id: i,
+      time: `${String(hh<0?16:hh).padStart(2,'0')}:${String(mm<0?59:mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`,
+      phone: String(1000000000 + Math.floor(Math.random()*9000000000)),
+      durS,
+      duration: `00:${String(durM).padStart(2,'0')}:${String(durR).padStart(2,'0')}`,
+      size: `${(sizeKb/1).toFixed(2)} KB`,
+      ext: exts[i%exts.length],
+    });
+  }
+  return rows;
+}
+
+const ALL_RECS = genRecordings(200);
+
+// Wave bars
+function WaveForm({ playing }) {
+  const heights = [4,8,14,20,26,18,24,16,10,22,28,20,14,8,18,24,12,20,26,16,10,14,20,16,12];
+  return (
+    <div className="waveform">
+      {heights.map((h,i) => (
+        <div key={i} className={`wbar${playing?' playing':''}`}
+          style={{height:h, animationDelay:`${(i*0.07)%1.2}s`, animationDuration:`${0.8+Math.random()*0.6}s`}}/>
+      ))}
+    </div>
+  );
+}
+
+// NAV
+const NAV = [
+  { key:'stats',      label:'Statistics',  icon:'M18 20V10M12 20V4M6 20v-6' },
+  { key:'reports',    label:'Reports',     icon:'M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z' },
+  { key:'recordings', label:'Recordings',  icon:'M3 18v-6a9 9 0 0118 0v6M21 19a2 2 0 01-2 2h-1a2 2 0 01-2-2v-3a2 2 0 012-2h3zM3 19a2 2 0 002 2h1a2 2 0 002-2v-3a2 2 0 00-2-2H3z' },
+  { key:'export',     label:'Data Export', icon:'M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3' },
+];
+
+function App() {
+  const [theme, setTheme] = useState(()=>localStorage.getItem('fa_theme')||'dark');
+  const [tab, setTab] = useState('recordings');
+  const [search, setSearch] = useState('');
+  const [date, setDate] = useState('2026-04-21');
+  const [page, setPage] = useState(1);
+  const [playing, setPlaying] = useState(null); // row id
+  const [progress, setProgress] = useState(0);
+  const [tweakOpen, setTweakOpen] = useState(false);
+  const timerRef = useRef(null);
+  const PER_PAGE = 12;
+
+  useEffect(()=>{
+    document.getElementById('app-root').className = theme;
+    localStorage.setItem('fa_theme', theme);
+  },[theme]);
+
+  useEffect(()=>{
+    const h = e => {
+      if(e.data?.type==='__activate_edit_mode') setTweakOpen(true);
+      if(e.data?.type==='__deactivate_edit_mode') setTweakOpen(false);
+    };
+    window.addEventListener('message',h);
+    window.parent.postMessage({type:'__edit_mode_available'},'*');
+    return ()=>window.removeEventListener('message',h);
+  },[]);
+
+  // Simulate playback
+  useEffect(()=>{
+    if(playing !== null) {
+      setProgress(0);
+      timerRef.current = setInterval(()=>{
+        setProgress(p => {
+          if(p >= 100) { clearInterval(timerRef.current); setPlaying(null); return 0; }
+          return p + 0.5;
+        });
+      }, 80);
+    } else {
+      clearInterval(timerRef.current);
+      setProgress(0);
+    }
+    return ()=>clearInterval(timerRef.current);
+  },[playing]);
+
+  const filtered = ALL_RECS.filter(r =>
+    (!search || r.phone.includes(search) || r.ext.includes(search)) &&
+    true
+  );
+
+  const total = filtered.length;
+  const pages = Math.max(1,Math.ceil(total/PER_PAGE));
+  const curPage = Math.min(page,pages);
+  const rows = filtered.slice((curPage-1)*PER_PAGE, curPage*PER_PAGE);
+
+  const playingRow = playing !== null ? ALL_RECS.find(r=>r.id===playing) : null;
+
+  function fmtTime(pct, durS) {
+    const s = Math.floor(pct/100*durS);
+    return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  }
+
+  // Duration view data
+  const durRows = [...filtered].sort((a,b)=>b.durS-a.durS).slice(0,24);
+  const maxDur = durRows[0]?.durS || 1;
+
+  return (
+    <div className="app">
+      {/* SIDEBAR */}
+      <aside className="sidebar">
+        <div className="sidebar-logo">
+          <div className="logo-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11 19.79 19.79 0 01.11 2.38 2 2 0 012.11.2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.28-1.35a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z"/>
+            </svg>
+          </div>
+          <div className="logo-name">Funnel <span>AI</span></div>
+        </div>
+        <div className="sidebar-section">
+          <div className="sidebar-label">Navigation</div>
+          {NAV.map(n=>(
+            <div key={n.key} className={`nav-item${n.key==='recordings'?' active':''}`} onClick={()=>n.key==='reports'&&(window.location.href='Call Reports.html')}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d={n.icon}/></svg>
+              {n.label}
+            </div>
+          ))}
+        </div>
+        <div className="sidebar-section" style={{marginTop:8}}>
+          <div className="sidebar-label">Account</div>
+          <div className="nav-item">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+            Client View
+          </div>
+          <div className="nav-item" onClick={()=>window.location.href='Login.html'} style={{color:'var(--text3)'}}>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+            Logout
+          </div>
+        </div>
+        <div className="sidebar-footer">
+          <div className="user-chip">
+            <div className="avatar">AB</div>
+            <div>
+              <div className="user-name">Astro Bpo</div>
+              <div className="user-role">Extension: 11</div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      {/* MAIN */}
+      <div className="main">
+        {/* TOPBAR */}
+        <div className="topbar">
+          <div className="topbar-left">
+            <span className="page-title">Call Recordings</span>
+            <span className="record-count">{total.toLocaleString()} recordings</span>
+            <span style={{fontSize:11,color:'var(--text3)'}}>Campaign 9 · April 21, 2026</span>
+          </div>
+          <div className="topbar-right">
+            <button className="icon-btn" onClick={()=>setTheme(t=>t==='dark'?'light':'dark')} title="Toggle theme">
+              {theme==='dark'
+                ? <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                : <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+              }
+            </button>
+            <button className="icon-btn" onClick={()=>{setSearch('');setPage(1);}} title="Refresh">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+            </button>
+            <button className="export-btn">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              Export All
+            </button>
+          </div>
+        </div>
+
+        <div className="content">
+          {/* STATS */}
+          <div className="stats-row">
+            <div className="stat-card">
+              <div className="stat-label">Total Recordings</div>
+              <div className="stat-val">2,335</div>
+              <div className="stat-sub">April 21, 2026</div>
+              <span className="stat-pill pill-green">+8.2%</span>
+            </div>
+            <div className="stat-card">
+              <div className="stat-label">Total Duration</div>
+              <div className="stat-val">14h 22m</div>
+              <div className="stat-sub">Across all calls</div>
+              <span className="stat-pill pill-blue">47 pages</span>
+            </div>
+            <div className="stat-card">
+              <div className="stat-label">Avg Duration</div>
+              <div className="stat-val">22s</div>
+              <div className="stat-sub">Per recording</div>
+              <span className="stat-pill pill-amber">Extension 703007</span>
+            </div>
+            <div className="stat-card">
+              <div className="stat-label">Storage Used</div>
+              <div className="stat-val">1.2 GB</div>
+              <div className="stat-sub">Of 10 GB quota</div>
+              <span className="stat-pill pill-green">12% used</span>
+            </div>
+          </div>
+
+          {/* CMD BAR */}
+          <div className="cmd-bar">
+            <div className="cmd-segment" style={{flex:2}}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color:'var(--text3)',flexShrink:0}}><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input className="cmd-input" placeholder="Search by phone number or extension…" value={search} onChange={e=>{setSearch(e.target.value);setPage(1);}}/>
+            </div>
+            <div className="cmd-segment" style={{flexShrink:0}}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{color:'var(--text3)',flexShrink:0}}><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              <input type="date" className="cmd-date" value={date} onChange={e=>setDate(e.target.value)}/>
+            </div>
+            <div className="cmd-actions">
+              <button className="cmd-pill-btn ghost" onClick={()=>{setSearch('');setPage(1);}}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 102.13-9.36L1 10"/></svg>
+                Reset
+              </button>
+            </div>
+          </div>
+
+          {/* TABS */}
+          <div className="tabs-row">
+            <div className={`tab${tab==='recordings'?' active':''}`} onClick={()=>setTab('recordings')}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0118 0v6"/></svg>
+              Recordings
+            </div>
+            <div className={`tab${tab==='durations'?' active':''}`} onClick={()=>setTab('durations')}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              Durations
+            </div>
+          </div>
+
+          {/* NOW PLAYING */}
+          {playingRow && (
+            <div className="now-playing">
+              <WaveForm playing={true}/>
+              <div className="np-info">
+                <div className="np-phone">{playingRow.phone}</div>
+                <div className="np-meta">{playingRow.time} · {playingRow.duration} · Ext {playingRow.ext}</div>
+              </div>
+              <div className="np-timeline" style={{maxWidth:300}}>
+                <div className="np-scrubber">
+                  <div className="np-fill" style={{width:`${progress}%`}}/>
+                </div>
+                <div className="np-times">
+                  <span>{fmtTime(progress, playingRow.durS)}</span>
+                  <span>{playingRow.duration.slice(3)}</span>
+                </div>
+              </div>
+              <button className="np-play-btn" onClick={()=>setPlaying(null)}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+              </button>
+            </div>
+          )}
+
+          {tab==='recordings' ? (
+            <div className="table-card">
+              <div className="table-header">
+                <div className="table-title">Call Recordings</div>
+                <div className="table-meta">Showing {((curPage-1)*PER_PAGE)+1}–{Math.min(curPage*PER_PAGE,total)} of {total.toLocaleString()}</div>
+              </div>
+              <div style={{overflowX:'auto'}}>
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Time</th>
+                      <th>Phone Number</th>
+                      <th>Duration</th>
+                      <th>Size</th>
+                      <th>Extension</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map(r=>(
+                      <tr key={r.id} className={playing===r.id?'playing-row':''}>
+                        <td><span className="time-cell">{r.time}</span></td>
+                        <td><span className="phone-cell">{r.phone}</span></td>
+                        <td><span className="dur-cell">{r.duration}</span></td>
+                        <td><span className="size-cell">{r.size}</span></td>
+                        <td><span className="ext-cell">{r.ext}</span></td>
+                        <td>
+                          <div className="action-wrap">
+                            <button className={`play-btn${playing===r.id?' active':''}`}
+                              onClick={()=>setPlaying(p=>p===r.id?null:r.id)}>
+                              {playing===r.id
+                                ? <><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>Pause</>
+                                : <><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>Play</>
+                              }
+                            </button>
+                            <button className="dl-btn">
+                              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                              Save
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              <div className="pagination">
+                <div className="page-info">Page {curPage} of {pages}</div>
+                <div className="page-btns">
+                  <button className="page-btn" onClick={()=>setPage(p=>Math.max(1,p-1))}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                  </button>
+                  {Array.from({length:Math.min(5,pages)},(_,i)=>{
+                    const p=Math.max(1,Math.min(pages-4,curPage-2))+i;
+                    return p<=pages?<button key={p} className={`page-btn${p===curPage?' active':''}`} onClick={()=>setPage(p)}>{p}</button>:null;
+                  })}
+                  <button className="page-btn" onClick={()=>setPage(p=>Math.min(pages,p+1))}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="dur-grid">
+              {durRows.map(r=>(
+                <div key={r.id} className="dur-card">
+                  <div className="dur-card-top">
+                    <span className="dur-card-phone">{r.phone}</span>
+                    <span className="dur-card-time">{r.time}</span>
+                  </div>
+                  <div className="dur-bar-bg">
+                    <div className="dur-bar-fill" style={{width:`${(r.durS/maxDur)*100}%`}}/>
+                  </div>
+                  <div className="dur-card-meta">
+                    <span className="dur-card-dur">{r.duration}</span>
+                    <span>Ext {r.ext} · {r.size}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* TWEAKS */}
+      <div className={`tweak-panel${tweakOpen?' open':''}`}>
+        <div className="tweak-title">
+          Tweaks
+          <button style={{background:'none',border:'none',cursor:'pointer',color:'var(--text3)',fontFamily:'inherit'}} onClick={()=>setTweakOpen(false)}>✕</button>
+        </div>
+        <div className="tweak-row">
+          <label>Theme</label>
+          <select className="tweak-select" value={theme} onChange={e=>setTheme(e.target.value)}>
+            <option value="dark">Dark</option>
+            <option value="light">Light</option>
+          </select>
+        </div>
+        <div className="tweak-row">
+          <label>Default Tab</label>
+          <select className="tweak-select" value={tab} onChange={e=>setTab(e.target.value)}>
+            <option value="recordings">Recordings</option>
+            <option value="durations">Durations</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('react-root')).render(<App/>);
+</script>
+</body>
+</html>
