@@ -275,7 +275,7 @@ const MedicareDashboard = () => {
 
         // Build query parameters
         const params = new URLSearchParams();
-        
+
         let nyStartDate = startDate;
         let nyStartTime = startTime;
         let nyEndDate = endDate;
@@ -286,32 +286,32 @@ const MedicareDashboard = () => {
             if (!dStr) return { d: null, t: null };
             const dateObj = new Date(`${dStr}T${tStr || "00:00"}:00`);
             if (isNaN(dateObj.getTime())) return { d: dStr, t: tStr };
-            
+
             const d = new Intl.DateTimeFormat("en-CA", {
-                timeZone: "America/New_York",
-                year: "numeric",
-                month: "2-digit",
-                day: "2-digit"
+              timeZone: "America/New_York",
+              year: "numeric",
+              month: "2-digit",
+              day: "2-digit"
             }).format(dateObj);
-            
+
             let t = null;
             if (tStr) {
-               const formatter = new Intl.DateTimeFormat("en-GB", {
-                   timeZone: "America/New_York",
-                   hour: "2-digit",
-                   minute: "2-digit",
-                   hour12: false
-               });
-               t = formatter.format(dateObj);
-               if (t.startsWith("24:")) t = "00:" + t.substring(3);
+              const formatter = new Intl.DateTimeFormat("en-GB", {
+                timeZone: "America/New_York",
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: false
+              });
+              t = formatter.format(dateObj);
+              if (t.startsWith("24:")) t = "00:" + t.substring(3);
             }
             return { d, t };
           };
-          
+
           const startNY = convertToNY(startDate, startTime);
           nyStartDate = startNY.d || startDate;
           nyStartTime = startNY.t || startTime;
-          
+
           const endNY = convertToNY(endDate, endTime);
           nyEndDate = endNY.d || endDate;
           nyEndTime = endNY.t || endTime;
@@ -1550,9 +1550,9 @@ const MedicareDashboard = () => {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
                     <span style={{ fontSize: "12px", color: "#64748b" }}>{card.sub}</span>
-                    <span style={{ 
-                      fontSize: "12px", 
-                      fontWeight: 600, 
+                    <span style={{
+                      fontSize: "12px",
+                      fontWeight: 600,
                       color: card.accentColor,
                       backgroundColor: `${card.accentColor}20`,
                       padding: "2px 8px",
@@ -1641,14 +1641,23 @@ const MedicareDashboard = () => {
 
 
             {/* Category Filter Pills - Horizontal Scroll */}
-            <div style={{
-              display: "flex",
-              gap: "10px",
-              marginBottom: "24px",
-              overflowX: "auto",
-              paddingBottom: "4px",
-            }}>
-              {/* All Calls Pill */}
+              <style>{`
+                .hide-scrollbar::-webkit-scrollbar {
+                  display: none;
+                }
+              `}</style>
+              <div 
+                className="hide-scrollbar"
+                style={{
+                  display: "flex",
+                  gap: "10px",
+                  marginBottom: "24px",
+                  overflowX: "auto",
+                  paddingBottom: "4px",
+                  scrollbarWidth: "none", // Firefox
+                  msOverflowStyle: "none", // IE and Edge
+              }}>
+                {/* All Calls Pill */}
               <button
                 onClick={() => setSelectedOutcomes([])}
                 style={{
