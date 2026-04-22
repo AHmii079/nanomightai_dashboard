@@ -243,7 +243,7 @@ const RequestCampaign = () => {
       });
 
       setTimeout(() => {
-        window.location.href = '/client-landing';
+        window.location.href = '/dashboard?view=dashboard';
       }, 2000);
     } catch (error) {
       console.error('Error submitting form:', error);
@@ -305,7 +305,7 @@ const RequestCampaign = () => {
             </div>
             <button
               className="back-btn"
-              onClick={() => window.location.href = '/client-landing'}
+              onClick={() => window.location.href = '/dashboard?view=dashboard'}
             >
               <i className="bi bi-arrow-left"></i>
               Back to Dashboard

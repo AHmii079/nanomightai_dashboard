@@ -15,9 +15,6 @@ const PageTitleUpdater = () => {
             case '/dashboard':
                 title = 'Dashboard - Nanomight AI';
                 break;
-            case '/client-landing':
-                title = 'Landing Page - Nanomight AI';
-                break;
             case '/recordings':
                 title = 'Recordings - Nanomight AI';
                 break;

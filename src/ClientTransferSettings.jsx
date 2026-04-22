@@ -27,7 +27,7 @@ export default function ClientTransferSettings({ isEmbedded }) {
         setIsAdminView(true);
       }
     } else {
-      navigate("/client-landing");
+      navigate("/dashboard?view=dashboard");
     }
   }, [location, navigate]);
 
@@ -88,7 +88,7 @@ export default function ClientTransferSettings({ isEmbedded }) {
         <div style={{ fontFamily: "'Inter', sans-serif", backgroundColor: "#f9fafb", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ textAlign: "center", padding: "2rem" }}>
             <div style={{ color: "#ef4444", marginBottom: "1rem" }}>{error}</div>
-            <button className="btn btn-primary" onClick={() => window.location.href = "/client-landing"}>Go Back</button>
+            <button className="btn btn-primary" onClick={() => window.location.href = "/dashboard?view=dashboard"}>Go Back</button>
           </div>
         </div>
     );

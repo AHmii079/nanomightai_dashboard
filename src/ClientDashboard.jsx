@@ -1433,7 +1433,7 @@ const MedicareDashboard = () => {
             Try Again
           </button>
           <button
-            onClick={() => window.location.href = '/client-landing'}
+            onClick={() => window.location.href = '/dashboard?view=dashboard'}
             style={{
               backgroundColor: '#6B7280',
               color: 'white',

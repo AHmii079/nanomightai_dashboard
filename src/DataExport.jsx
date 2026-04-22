@@ -259,7 +259,7 @@ export default function DataExport({ isEmbedded }) {
       <div style={{ fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", backgroundColor: "#f9fafb", color: "#111827", lineHeight: "1.5", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
         <div style={{ textAlign: "center", padding: "2rem" }}>
           <div style={{ color: "#ef4444", marginBottom: "1rem", fontSize: "1.125rem" }}>{error}</div>
-          <button className="btn btn-primary" onClick={() => window.location.href = "/client-landing"}>
+          <button className="btn btn-primary" onClick={() => window.location.href = "/dashboard?view=dashboard"}>
             Go Back
           </button>
         </div>

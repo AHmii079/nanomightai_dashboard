@@ -197,7 +197,7 @@ const ManageTeam = () => {
           <div className="header-left">
             <button
               className="back-btn"
-              onClick={() => (window.location.href = "/client-landing")}
+              onClick={() => (window.location.href = "/dashboard?view=dashboard")}
             >
               <i className="bi bi-arrow-left"></i>
               Back
