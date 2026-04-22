@@ -55,8 +55,9 @@ function App() {
                     <Route path="/admin-stage-data" element={<AdminStageData />} />
                 </Route>
 
-                {/* Integration Form Route (No Sidebar) */}
+                {/* Integration Form Route (No Sidebar) - Temporarily hidden 
                 <Route path="/integration-form" element={<IntegrationForm />} />
+                */}
             </Routes>
         </Router>
     );
