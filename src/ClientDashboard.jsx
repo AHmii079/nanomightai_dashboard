@@ -1772,7 +1772,20 @@ const MedicareDashboard = () => {
                   <thead>
                     <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
                       <th
-                        onClick={() => handleSort("id")}
+                        style={{
+                          textAlign: "center",
+                          padding: "12px 16px",
+                          fontWeight: 500,
+                          color: "#64748b",
+                          fontSize: "11px",
+                          textTransform: "uppercase",
+                          letterSpacing: "0.06em",
+                        }}
+                      >
+                        SR#
+                      </th>
+                      <th
+                        onClick={() => handleSort("timestamp")}
                         style={{
                           textAlign: "left",
                           padding: "12px 16px",
@@ -1783,7 +1796,6 @@ const MedicareDashboard = () => {
                           letterSpacing: "0.06em",
                           cursor: "pointer",
                           userSelect: "none",
-                          position: "relative",
                         }}
                       >
                         <div
@@ -1793,8 +1805,8 @@ const MedicareDashboard = () => {
                             gap: "6px",
                           }}
                         >
-                          #
-                          {sortColumn === "id" && (
+                          Time, Date
+                          {sortColumn === "timestamp" && (
                             <i
                               className={`bi bi-chevron-${sortDirection === "asc" ? "up" : "down"
                                 }`}
@@ -1824,7 +1836,7 @@ const MedicareDashboard = () => {
                             gap: "6px",
                           }}
                         >
-                          Phone No
+                          Number
                           {sortColumn === "phone" && (
                             <i
                               className={`bi bi-chevron-${sortDirection === "asc" ? "up" : "down"
@@ -1835,7 +1847,6 @@ const MedicareDashboard = () => {
                         </div>
                       </th>
                       <th
-                        onClick={() => handleSort("listId")}
                         style={{
                           textAlign: "left",
                           padding: "12px 16px",
@@ -1844,26 +1855,9 @@ const MedicareDashboard = () => {
                           fontSize: "11px",
                           textTransform: "uppercase",
                           letterSpacing: "0.06em",
-                          cursor: "pointer",
-                          userSelect: "none",
                         }}
                       >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                          }}
-                        >
-                          List ID
-                          {sortColumn === "listId" && (
-                            <i
-                              className={`bi bi-chevron-${sortDirection === "asc" ? "up" : "down"
-                                }`}
-                              style={{ fontSize: "12px" }}
-                            ></i>
-                          )}
-                        </div>
+                        Transcript
                       </th>
                       <th
                         onClick={() => handleSort("category")}
@@ -1896,57 +1890,13 @@ const MedicareDashboard = () => {
                           )}
                         </div>
                       </th>
-                      <th
-                        onClick={() => handleSort("timestamp")}
-                        style={{
-                          textAlign: "left",
-                          padding: "12px 16px",
-                          fontWeight: 500,
-                          color: "#64748b",
-                          fontSize: "11px",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.06em",
-                          cursor: "pointer",
-                          userSelect: "none",
-                        }}
-                      >
-                        <div
-                          style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                          }}
-                        >
-                          Timestamp (US EST/EDT)
-                          {sortColumn === "timestamp" && (
-                            <i
-                              className={`bi bi-chevron-${sortDirection === "asc" ? "up" : "down"
-                                }`}
-                              style={{ fontSize: "12px" }}
-                            ></i>
-                          )}
-                        </div>
-                      </th>
-                      <th
-                        style={{
-                          textAlign: "left",
-                          padding: "12px 16px",
-                          fontWeight: 500,
-                          color: "#64748b",
-                          fontSize: "11px",
-                          textTransform: "uppercase",
-                          letterSpacing: "0.06em",
-                        }}
-                      >
-                        Transcript
-                      </th>
                     </tr>
                   </thead>
                   <tbody>
                     {paginatedRecords.length === 0 ? (
                       <tr>
                         <td
-                          colSpan={6}
+                          colSpan={5}
                           style={{
                             textAlign: "center",
                             color: "#888",
@@ -1957,7 +1907,7 @@ const MedicareDashboard = () => {
                         </td>
                       </tr>
                     ) : (
-                      paginatedRecords.map((record) => {
+                      paginatedRecords.map((record, index) => {
                         const outcome = outcomes.find(
                           (o) => o.label === record.category,
                         );
@@ -1984,45 +1934,11 @@ const MedicareDashboard = () => {
                               style={{
                                 padding: "12px 16px",
                                 fontSize: "14px",
-                                color: "#60a5fa",
-                                fontWeight: 500,
+                                color: "#94a3b8",
+                                textAlign: "center",
                               }}
                             >
-                              {record.id}
-                            </td>
-                            <td
-                              style={{
-                                padding: "12px 16px",
-                                fontSize: "14px",
-                                color: "#f3f4f6",
-                              }}
-                            >
-                              {record.phone}
-                            </td>
-                            <td
-                              style={{
-                                padding: "12px 16px",
-                                fontSize: "14px",
-                                color: "#9ca3af",
-                              }}
-                            >
-                              {record.listId}
-                            </td>
-                            <td style={{ padding: "12px 16px" }}>
-                              <span
-                                style={{
-                                  display: "inline-flex",
-                                  alignItems: "center",
-                                  padding: "4px 10px",
-                                  borderRadius: "4px",
-                                  fontSize: "12px",
-                                  fontWeight: 600,
-                                  backgroundColor: categoryColor,
-                                  color: "white",
-                                }}
-                              >
-                                {record.category}
-                              </span>
+                              {startIndex + index + 1}
                             </td>
                             <td
                               style={{
@@ -2032,6 +1948,15 @@ const MedicareDashboard = () => {
                               }}
                             >
                               {record.timestamp}
+                            </td>
+                            <td
+                              style={{
+                                padding: "12px 16px",
+                                fontSize: "14px",
+                                color: "#f3f4f6",
+                              }}
+                            >
+                              {record.phone}
                             </td>
                             <td
                               style={{
@@ -2074,6 +1999,22 @@ const MedicareDashboard = () => {
                                   No transcript
                                 </span>
                               )}
+                            </td>
+                            <td style={{ padding: "12px 16px" }}>
+                              <span
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  padding: "4px 10px",
+                                  borderRadius: "4px",
+                                  fontSize: "12px",
+                                  fontWeight: 600,
+                                  backgroundColor: categoryColor,
+                                  color: "white",
+                                }}
+                              >
+                                {record.category}
+                              </span>
                             </td>
                           </tr>
                         );
@@ -2355,26 +2296,6 @@ const MedicareDashboard = () => {
                       }}
                     >
                       {selectedCallRecord.phone}
-                    </div>
-                  </div>
-                  <div>
-                    <div
-                      style={{
-                        fontSize: "12px",
-                        color: "#666",
-                        marginBottom: "4px",
-                      }}
-                    >
-                      List ID
-                    </div>
-                    <div
-                      style={{
-                        fontSize: "14px",
-                        fontWeight: 500,
-                        color: "#333",
-                      }}
-                    >
-                      {selectedCallRecord.listId}
                     </div>
                   </div>
                   <div>
