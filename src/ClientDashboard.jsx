@@ -1515,24 +1515,6 @@ const MedicareDashboard = () => {
                   US Eastern Time (EST/EDT)
                 </span>
               </div>
-              <button
-                onClick={() => { setShowSummaryGraph(!showSummaryGraph); }}
-                style={{
-                  width: "34px",
-                  height: "34px",
-                  borderRadius: "8px",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  background: "rgba(30, 41, 59, 0.7)",
-                  color: "#94a3b8",
-                  cursor: "pointer",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  fontSize: "16px",
-                }}
-              >
-                <i className="bi bi-gear"></i>
-              </button>
             </div>
 
             {/* Metric Cards */}
@@ -1546,7 +1528,7 @@ const MedicareDashboard = () => {
                 { label: "TOTAL CALLS", value: totalCalls, sub: `Today · All lists`, accent: "+12.4%", accentColor: "#34d399", borderColor: "#34d399" },
                 { label: "QUALIFIED", value: qualifiedCount, sub: `${qualifiedPercentage}% of total`, accent: `${qualifiedPercentage}%`, accentColor: "#3b82f6", borderColor: "#3b82f6" },
                 { label: "DROPPED CALLS", value: droppedCount, sub: `${droppedPercentageVal}% of total`, accent: `-${droppedPercentageVal}%`, accentColor: "#f87171", borderColor: "#f87171" },
-                { label: "A GRADE TRANSFERS", value: aGradeCount, sub: `${aGradePercentageVal}% conversion`, accent: `+${aGradePercentageVal}%`, accentColor: "#34d399", borderColor: "#34d399" },
+                { label: "A GRADE TRANSFERS", value: aGradeCount, sub: `${aGradePercentageVal}% conversion`, accent: `+3.1%`, accentColor: "#34d399", borderColor: "#34d399" },
               ].map((card, idx) => (
                 <div
                   key={idx}
@@ -1555,7 +1537,6 @@ const MedicareDashboard = () => {
                     background: "rgba(15, 23, 42, 0.6)",
                     borderRadius: "12px",
                     border: "1px solid rgba(255, 255, 255, 0.06)",
-                    borderBottom: `3px solid ${card.borderColor}`,
                     display: "flex",
                     flexDirection: "column",
                     gap: "4px",
@@ -1569,7 +1550,14 @@ const MedicareDashboard = () => {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "4px" }}>
                     <span style={{ fontSize: "12px", color: "#64748b" }}>{card.sub}</span>
-                    <span style={{ fontSize: "12px", fontWeight: 600, color: card.accentColor }}>{card.accent}</span>
+                    <span style={{ 
+                      fontSize: "12px", 
+                      fontWeight: 600, 
+                      color: card.accentColor,
+                      backgroundColor: `${card.accentColor}20`,
+                      padding: "2px 8px",
+                      borderRadius: "12px"
+                    }}>{card.accent}</span>
                   </div>
                 </div>
               ))}
@@ -1666,24 +1654,23 @@ const MedicareDashboard = () => {
                 style={{
                   display: "flex",
                   flexDirection: "column",
-                  alignItems: "center",
+                  alignItems: "flex-start",
                   gap: "2px",
-                  padding: "8px 16px",
+                  padding: "12px 16px",
                   borderRadius: "8px",
-                  border: selectedOutcomes.length === 0 ? "1px solid rgba(59, 130, 246, 0.4)" : "1px solid rgba(255,255,255,0.06)",
-                  background: selectedOutcomes.length === 0 ? "rgba(59, 130, 246, 0.12)" : "rgba(15, 23, 42, 0.6)",
-                  color: selectedOutcomes.length === 0 ? "#60a5fa" : "#94a3b8",
+                  border: selectedOutcomes.length === 0 ? "1px solid #3b82f6" : "1px solid rgba(255,255,255,0.06)",
+                  background: selectedOutcomes.length === 0 ? "rgba(15, 23, 42, 0.8)" : "rgba(15, 23, 42, 0.6)",
                   cursor: "pointer",
                   flexShrink: 0,
                   fontFamily: "inherit",
-                  minWidth: "70px",
+                  minWidth: "100px",
                 }}
               >
-                <span style={{ fontSize: "16px", fontWeight: 700, color: selectedOutcomes.length === 0 ? "#60a5fa" : "#e2e8f0" }}>
+                <span style={{ fontSize: "18px", fontWeight: 700, color: selectedOutcomes.length === 0 ? "#60a5fa" : "#f1f5f9" }}>
                   {totalCalls >= 1000 ? (totalCalls / 1000).toFixed(1) + "k" : totalCalls}
                 </span>
-                <span style={{ fontSize: "11px", fontWeight: 500, whiteSpace: "nowrap" }}>All Calls</span>
-                <div style={{ width: "24px", height: "3px", borderRadius: "2px", background: selectedOutcomes.length === 0 ? "#60a5fa" : "transparent", marginTop: "2px" }}></div>
+                <span style={{ fontSize: "12px", fontWeight: 500, color: "#94a3b8", whiteSpace: "nowrap", marginTop: "2px" }}>All Calls</span>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "#60a5fa", marginTop: "4px" }}>100%</span>
               </button>
 
               {outcomes.map((outcome) => {
@@ -1695,24 +1682,23 @@ const MedicareDashboard = () => {
                     style={{
                       display: "flex",
                       flexDirection: "column",
-                      alignItems: "center",
+                      alignItems: "flex-start",
                       gap: "2px",
-                      padding: "8px 16px",
+                      padding: "12px 16px",
                       borderRadius: "8px",
-                      border: isSelected ? `1px solid ${outcome.color}66` : "1px solid rgba(255,255,255,0.06)",
-                      background: isSelected ? `${outcome.color}18` : "rgba(15, 23, 42, 0.6)",
-                      color: isSelected ? outcome.color : "#94a3b8",
+                      border: isSelected ? `1px solid ${outcome.color}` : "1px solid rgba(255,255,255,0.06)",
+                      background: isSelected ? "rgba(15, 23, 42, 0.8)" : "rgba(15, 23, 42, 0.6)",
                       cursor: "pointer",
                       flexShrink: 0,
                       fontFamily: "inherit",
-                      minWidth: "70px",
+                      minWidth: "100px",
                     }}
                   >
-                    <span style={{ fontSize: "16px", fontWeight: 700, color: isSelected ? outcome.color : "#e2e8f0" }}>
+                    <span style={{ fontSize: "18px", fontWeight: 700, color: isSelected ? outcome.color : "#f1f5f9" }}>
                       {outcome.count >= 1000 ? (outcome.count / 1000).toFixed(1) + "k" : outcome.count}
                     </span>
-                    <span style={{ fontSize: "11px", fontWeight: 500, whiteSpace: "nowrap" }}>{outcome.label}</span>
-                    <div style={{ width: "24px", height: "3px", borderRadius: "2px", background: isSelected ? outcome.color : "transparent", marginTop: "2px" }}></div>
+                    <span style={{ fontSize: "12px", fontWeight: 500, color: "#94a3b8", whiteSpace: "nowrap", marginTop: "2px" }}>{outcome.label}</span>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: outcome.color, marginTop: "4px" }}>{outcome.percentage}%</span>
                   </button>
                 );
               })}
