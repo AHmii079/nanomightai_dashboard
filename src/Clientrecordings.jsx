@@ -23,6 +23,7 @@ const ClientRecordings = ({ isEmbedded }) => {
   const [totalServersQueried, setTotalServersQueried] = useState(0);
   const [serversWithData, setServersWithData] = useState(0);
   const [durationStats, setDurationStats] = useState([]);
+  const [totalDuration, setTotalDuration] = useState("00:00:00");
   const [viewMode, setViewMode] = useState("recordings");
 
   // Audio player states
@@ -154,6 +155,7 @@ const ClientRecordings = ({ isEmbedded }) => {
       setTotalServersQueried(data.total_servers_queried || 0);
       setServersWithData(data.servers_with_data || 0);
       setDurationStats(data.duration_stats || []);
+      setTotalDuration(data.total_duration || "00:00:00");
       setError(null);
     } catch (err) {
       setError(err.message);
@@ -291,16 +293,17 @@ const ClientRecordings = ({ isEmbedded }) => {
 
   // Computed stats
   const totalRecordings = pagination?.total_records || 0;
-  const totalDurationSecs = recordings.reduce((sum, r) => {
+  const pageDurationSecs = recordings.reduce((sum, r) => {
     if (!r.duration) return sum;
     const parts = r.duration.split(":");
     if (parts.length === 3) return sum + parseInt(parts[0])*3600 + parseInt(parts[1])*60 + parseInt(parts[2]);
     if (parts.length === 2) return sum + parseInt(parts[0])*60 + parseInt(parts[1]);
     return sum;
   }, 0);
-  const totalHours = Math.floor(totalDurationSecs / 3600);
-  const totalMins = Math.floor((totalDurationSecs % 3600) / 60);
-  const avgDurationSecs = recordings.length > 0 ? Math.round(totalDurationSecs / recordings.length) : 0;
+  const totalDurationParts = (totalDuration || "").split(":");
+  const totalHours = totalDurationParts.length === 3 ? parseInt(totalDurationParts[0], 10) || 0 : 0;
+  const totalMins = totalDurationParts.length >= 2 ? parseInt(totalDurationParts[1], 10) || 0 : 0;
+  const avgDurationSecs = recordings.length > 0 ? Math.round(pageDurationSecs / recordings.length) : 0;
   const totalSizeKB = recordings.reduce((sum, r) => {
     if (!r.size) return sum;
     const num = parseFloat(r.size);
@@ -308,10 +311,6 @@ const ClientRecordings = ({ isEmbedded }) => {
     return sum + num;
   }, 0);
   const totalSizeGB = (totalSizeKB / (1024 * 1024)).toFixed(1);
-
-  // Get unique extensions
-  const uniqueExtensions = [...new Set(recordings.map(r => r.extension).filter(Boolean))];
-  const firstExtension = uniqueExtensions.length > 0 ? uniqueExtensions[0] : "N/A";
 
   return (
     <>
@@ -348,7 +347,6 @@ const ClientRecordings = ({ isEmbedded }) => {
               <div className="rec-metric-label">AVG DURATION</div>
               <div className="rec-metric-value">{avgDurationSecs}s</div>
               <div className="rec-metric-sub">Per recording</div>
-              <span className="rec-metric-badge-alt" style={{ color: "#a78bfa", borderColor: "rgba(167,139,250,0.25)" }}>Extension {firstExtension}</span>
             </div>
           </div>
 
