@@ -11,15 +11,9 @@ const ClientLanding = () => {
     fetchCampaignData();
   }, []);
 
-  const getAuthToken = () => {
-    return localStorage.getItem("access_token");
-  };
+  const getAuthToken = () => localStorage.getItem("access_token");
+  const getUserRole = () => localStorage.getItem("role");
 
-  const getUserRole = () => {
-    return localStorage.getItem("role");
-  };
-
-  // Updated fetchCampaignData function to handle both client and client_member roles
   const fetchCampaignData = async () => {
     try {
       setLoading(true);
@@ -32,9 +26,7 @@ const ClientLanding = () => {
       const userRole = getUserRole();
       let clientId;
 
-      // Check if user is client_member
       if (userRole === "client_member") {
-        // Step 1: Fetch employer information to get the client_id
         const employerResponse = await fetch(
           "https://api.xlitecore.xdialnetworks.com/api/v1/client/campaigns/employer",
           {
@@ -51,11 +43,11 @@ const ClientLanding = () => {
           let isExpired = true;
           if (currentToken) {
             try {
-              const payload = JSON.parse(atob(currentToken.split('.')[1]));
-              if (payload.exp && Date.now() < (payload.exp * 1000) - 60000) {
+              const payload = JSON.parse(atob(currentToken.split(".")[1]));
+              if (payload.exp && Date.now() < payload.exp * 1000 - 60000) {
                 isExpired = false;
               }
-            } catch(e) {}
+            } catch (e) {}
           }
           if (isExpired) {
             throw new Error("Session expired. Please login again.");
@@ -69,27 +61,19 @@ const ClientLanding = () => {
         }
 
         const employerData = await employerResponse.json();
-        console.log("Employer data:", employerData);
-
-        // Store member info for display
         setMemberInfo(employerData);
-
-        // Extract client_id from employer response
         clientId = employerData.client_id;
 
         if (!clientId) {
           throw new Error("Employer information does not contain client ID");
         }
       } else {
-        // For regular client role, get client_id from localStorage
         clientId = localStorage.getItem("user_id");
-
         if (!clientId) {
           throw new Error("User ID not found. Please login again.");
         }
       }
 
-      // Step 2: Fetch campaigns using the client_id
       const response = await fetch(
         `https://api.xlitecore.xdialnetworks.com/api/v1/client/campaigns/${clientId}`,
         {
@@ -106,11 +90,11 @@ const ClientLanding = () => {
         let isExpired = true;
         if (currentToken) {
           try {
-            const payload = JSON.parse(atob(currentToken.split('.')[1]));
-            if (payload.exp && Date.now() < (payload.exp * 1000) - 60000) {
+            const payload = JSON.parse(atob(currentToken.split(".")[1]));
+            if (payload.exp && Date.now() < payload.exp * 1000 - 60000) {
               isExpired = false;
             }
-          } catch(e) {}
+          } catch (e) {}
         }
         if (isExpired) {
           throw new Error("Session expired. Please login again.");
@@ -131,9 +115,13 @@ const ClientLanding = () => {
       setData(result);
       setError("");
     } catch (err) {
-      // Handle network errors (CORS, connection issues, etc.)
-      if (err.name === 'TypeError' && (err.message.includes('NetworkError') || err.message.includes('fetch'))) {
-        setError('Unable to connect to the server. This may be due to network issues or server configuration. Please try again later.');
+      if (
+        err.name === "TypeError" &&
+        (err.message.includes("NetworkError") || err.message.includes("fetch"))
+      ) {
+        setError(
+          "Unable to connect to the server. This may be due to network issues or server configuration. Please try again later."
+        );
       } else {
         setError(err.message || "An error occurred while fetching data");
       }
@@ -161,9 +149,9 @@ const ClientLanding = () => {
     if (!dateString) return "N/A";
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
-      month: "2-digit",
+      month: "short",
       day: "2-digit",
-      year: "2-digit",
+      year: "numeric",
     });
   };
 
@@ -178,13 +166,11 @@ const ClientLanding = () => {
 
   const getExpiryWarning = (daysLeft) => {
     if (daysLeft === null) return null;
-    if (daysLeft < 0) return { text: "Expired", color: "#DC2626" };
-    if (daysLeft === 0) return { text: "Expires Today", color: "#DC2626" };
-    if (daysLeft <= 7)
-      return { text: `${daysLeft} days left`, color: "#DC2626" };
-    if (daysLeft <= 15)
-      return { text: `${daysLeft} days left`, color: "#F59E0B" };
-    return { text: `${daysLeft} days left`, color: "#10B981" };
+    if (daysLeft < 0) return { text: "Expired", tone: "red" };
+    if (daysLeft === 0) return { text: "Expires Today", tone: "red" };
+    if (daysLeft <= 7) return { text: `${daysLeft} days left`, tone: "red" };
+    if (daysLeft <= 15) return { text: `${daysLeft} days left`, tone: "amber" };
+    return { text: `${daysLeft} days left`, tone: "green" };
   };
 
   const formatCampaignName = (name) => {
@@ -193,89 +179,56 @@ const ClientLanding = () => {
     return `${name} Remote Agents`;
   };
 
+  // ─── LOADING ───
   if (loading) {
     return (
       <>
         <style>{styles}</style>
-        <div className="loading-container">
-          <Loader size="large" />
-          <p>Loading campaign data...</p>
+        <div className="cl-root">
+          <div className="blob-wrap" aria-hidden="true">
+            <div className="blob blob1"></div>
+            <div className="blob blob2"></div>
+          </div>
+          <div className="cl-loading">
+            <Loader size="large" />
+            <p>Loading campaign data…</p>
+          </div>
         </div>
       </>
     );
   }
 
+  // ─── ERROR ───
   if (error) {
     return (
       <>
         <style>{styles}</style>
-        <div style={{
-          padding: '40px',
-          maxWidth: '600px',
-          margin: '0 auto',
-          textAlign: 'center',
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center'
-        }}>
-          <div style={{
-            backgroundColor: '#FEE2E2',
-            border: '1px solid #FCA5A5',
-            borderRadius: '12px',
-            padding: '24px',
-            width: '100%'
-          }}>
-            <h2 style={{
-              color: '#DC2626',
-              fontSize: '20px',
-              fontWeight: '600',
-              marginBottom: '12px'
-            }}>
-              Unable to Load Campaigns
-            </h2>
-            <p style={{
-              color: '#991B1B',
-              fontSize: '14px',
-              lineHeight: '1.5',
-              marginBottom: '20px'
-            }}>
-              {error}
-            </p>
-            {!error.includes("login") && (
-              <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
-                <button
-                  onClick={fetchCampaignData}
-                  style={{
-                    backgroundColor: '#DC2626',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '10px 20px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Try Again
-                </button>
-                <button
-                  onClick={() => window.location.href = '/'}
-                  style={{
-                    backgroundColor: '#4F46E5',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '8px',
-                    padding: '10px 20px',
-                    fontSize: '14px',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}
-                >
-                  Login Again
-                </button>
+        <div className="cl-root">
+          <div className="blob-wrap" aria-hidden="true">
+            <div className="blob blob1"></div>
+            <div className="blob blob2"></div>
+          </div>
+          <div className="cl-error-wrap">
+            <div className="cl-error-card">
+              <div className="cl-error-icon">
+                <i className="bi bi-exclamation-triangle-fill"></i>
               </div>
-            )}
+              <h2>Unable to Load Campaigns</h2>
+              <p>{error}</p>
+              {!error.includes("login") && (
+                <div className="cl-error-actions">
+                  <button className="cl-btn cl-btn-primary" onClick={fetchCampaignData}>
+                    <i className="bi bi-arrow-clockwise"></i> Try Again
+                  </button>
+                  <button
+                    className="cl-btn cl-btn-ghost"
+                    onClick={() => (window.location.href = "/")}
+                  >
+                    Login Again
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </>
@@ -287,193 +240,237 @@ const ClientLanding = () => {
   const totalBots =
     data?.campaigns?.reduce((sum, c) => sum + (c.bot_count || 0), 0) || 0;
 
-  // Get user role for display
   const userRole = getUserRole();
   const isClientMember = userRole === "client_member";
 
-  // Determine the display name
   const displayName = isClientMember
-    ? (memberInfo?.full_name || memberInfo?.username || localStorage.getItem("username") || "Team Member")
-    : (data?.client_name || "Client");
+    ? memberInfo?.full_name ||
+      memberInfo?.username ||
+      localStorage.getItem("username") ||
+      "Team Member"
+    : data?.client_name || "Client";
+
+  const initials = (displayName || "C")
+    .split(" ")
+    .map((w) => w[0])
+    .filter(Boolean)
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
   return (
     <>
       <style>{styles}</style>
-      <div className="container">
-        {/* Header */}
-        <div className="header">
-          <h1>
-            Welcome,{" "}
-            <span className="company-name">
-              {displayName}
-            </span>
-            {isClientMember && (
-              <span className="role-badge">Team Member</span>
-            )}
-          </h1>
-          <div className="header-buttons">
+      <div className="cl-root">
+        {/* Background blobs */}
+        <div className="blob-wrap" aria-hidden="true">
+          <div className="blob blob1"></div>
+          <div className="blob blob2"></div>
+        </div>
+
+        {/* ─── TOPBAR ─── */}
+        <div className="cl-topbar">
+          <div className="cl-topbar-left">
+            <div className="cl-logo-icon">
+              <svg
+                width="18"
+                height="18"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="white"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 11 19.79 19.79 0 01.11 2.38 2 2 0 012.11.2h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.91 7.91a16 16 0 006.18 6.18l1.28-1.35a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 16.92z" />
+              </svg>
+            </div>
+            <div className="cl-brand">
+              Nanomight <span>AI</span>
+            </div>
+          </div>
+          <div className="cl-topbar-right">
             {userRole === "client" && (
               <button
-                className="request-campaign-btn"
-                onClick={() => window.location.href = '/request-campaign'}
+                className="cl-btn cl-btn-success"
+                onClick={() => (window.location.href = "/request-campaign")}
               >
-                <i className="bi bi-plus-circle-fill"></i>
+                <i className="bi bi-plus-lg"></i>
                 Request Campaign
               </button>
             )}
             {!isClientMember && (
               <button
-                className="manage-team-btn"
-                onClick={() => window.location.href = '/manage-team'}
+                className="cl-btn cl-btn-primary"
+                onClick={() => (window.location.href = "/manage-team")}
               >
                 <i className="bi bi-people-fill"></i>
                 Manage Team
               </button>
             )}
-            <button className="logout-btn" onClick={handleLogout}>
+            <button className="cl-btn cl-btn-ghost" onClick={handleLogout}>
               <i className="bi bi-box-arrow-right"></i>
               Logout
             </button>
           </div>
         </div>
 
-
-
-        {/* Stats Cards */}
-        <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-card-header">
-              <div className="stat-card-title">Total Campaigns</div>
-              <div className="stat-icon-wrapper purple">
-                <i className="bi bi-megaphone-fill"></i>
+        <div className="cl-content">
+          {/* ─── HERO / WELCOME ─── */}
+          <div className="cl-hero">
+            <div className="cl-avatar">{initials}</div>
+            <div className="cl-hero-text">
+              <div className="cl-welcome">Welcome back</div>
+              <h1 className="cl-hero-title">
+                {displayName}
+                {isClientMember && <span className="cl-role-badge">Team Member</span>}
+              </h1>
+              <div className="cl-hero-sub">
+                {totalCampaigns} {totalCampaigns === 1 ? "campaign" : "campaigns"} ·{" "}
+                {activeCampaigns} active · {totalBots} bots deployed
               </div>
             </div>
-            <div className="stat-card-value">{totalCampaigns}</div>
           </div>
-          <div className="stat-card">
-            <div className="stat-card-header">
-              <div className="stat-card-title">Active Campaigns</div>
-              <div className="stat-icon-wrapper green">
-                <i className="bi bi-check-circle-fill"></i>
+
+          {/* ─── STAT CARDS ─── */}
+          <div className="cl-stats-row">
+            <div className="cl-stat-card">
+              <div className="cl-stat-label">Total Campaigns</div>
+              <div className="cl-stat-val">{totalCampaigns}</div>
+              <div className="cl-stat-sub">
+                <i className="bi bi-megaphone-fill" style={{ color: "#5E5CE6" }}></i>
+                All campaigns
               </div>
             </div>
-            <div className="stat-card-value">{activeCampaigns}</div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-card-header">
-              <div className="stat-card-title">Total Bots</div>
-              <div className="stat-icon-wrapper yellow">
-                <i className="bi bi-cpu-fill"></i>
+            <div className="cl-stat-card">
+              <div className="cl-stat-label">Active Campaigns</div>
+              <div className="cl-stat-val">{activeCampaigns}</div>
+              <div className="cl-stat-sub">
+                <i className="bi bi-check-circle-fill" style={{ color: "#30D158" }}></i>
+                Currently running
               </div>
             </div>
-            <div className="stat-card-value">{totalBots}</div>
+            <div className="cl-stat-card">
+              <div className="cl-stat-label">Total Bots</div>
+              <div className="cl-stat-val">{totalBots}</div>
+              <div className="cl-stat-sub">
+                <i className="bi bi-cpu-fill" style={{ color: "#FF9F0A" }}></i>
+                Deployed agents
+              </div>
+            </div>
           </div>
-        </div>
 
-        {/* Campaigns Section */}
-        <div className="section-header">
-          <h2>Your Campaigns</h2>
-        </div>
+          {/* ─── SECTION HEADER ─── */}
+          <div className="cl-section-header">
+            <div>
+              <h2>Your Campaigns</h2>
+              <div className="cl-section-sub">
+                Select a campaign to view its dashboard
+              </div>
+            </div>
+            <span className="cl-section-count">{totalCampaigns}</span>
+          </div>
 
-        <div className="campaigns-grid">
-          {data?.campaigns?.map((item) => {
-            const campaign = item.campaign;
-            const daysLeft = calculateDaysLeft(item.end_date);
-            const expiryWarning = getExpiryWarning(daysLeft);
-            const callStats = item.call_stats;
-
-            return (
-              <div key={item.id} className="campaign-card">
-                {expiryWarning && (
-                  <div
-                    className="expiry-warning-bar"
-                    style={{ backgroundColor: expiryWarning.color }}
-                  >
-                    <i className="bi bi-exclamation-circle-fill"></i>
-                    <span>{expiryWarning.text}</span>
-                  </div>
-                )}
-
-                {/* Row 1: Campaign Title with Count and Status */}
-                <div className="campaign-title-row">
-                  <div className="campaign-title-left">
-                    <h3 className="campaign-name-large">
-                      {formatCampaignName(campaign.name)}
-                    </h3>
-                    <span className="bot-count">{item.bot_count || 0}</span>
-                  </div>
-                  <span
-                    className={`status-badge-large ${item.status?.status_name === "Enabled"
-                      ? "active"
-                      : "paused"
-                      }`}
-                  >
-                    <i className="bi bi-circle-fill"></i>
-                    {item.status?.status_name || "Unknown"}
-                  </span>
+          {/* ─── CAMPAIGN CARDS ─── */}
+          <div className="cl-campaigns-grid">
+            {data?.campaigns?.length === 0 ? (
+              <div className="cl-empty">
+                <i className="bi bi-inbox"></i>
+                <div className="cl-empty-title">No campaigns yet</div>
+                <div className="cl-empty-sub">
+                  Your campaigns will appear here once they're created.
                 </div>
+              </div>
+            ) : (
+              data?.campaigns?.map((item) => {
+                const campaign = item.campaign;
+                const daysLeft = calculateDaysLeft(item.end_date);
+                const expiryWarning = getExpiryWarning(daysLeft);
+                const callStats = item.call_stats;
+                const isActive = item.status?.status_name === "Enabled";
 
-                {/* Row 2: Model */}
-                <div className="campaign-model-row">
-                  <span className="model-label">Model</span>
-                  <span className="model-value">
-                    {item.model?.name || "N/A"}
-                  </span>
-                </div>
-
-                {/* Row 3: Calls and Dates */}
-                <div className="campaign-metrics-row">
-                  <div className="metrics-left">
-                    <div className="metric-compact">
-                      <span className="metric-label-compact">
-                        Transferred Calls
-                      </span>
-                      <span className="metric-value-compact">
-                        {callStats?.calls_transferred?.toLocaleString() || 0}
-                        <span className="percentage-compact">
-                          ({callStats?.transfer_percentage || 0}%)
+                return (
+                  <div key={item.id} className="cl-campaign-card">
+                    {/* Header row */}
+                    <div className="cl-cc-header">
+                      <div className="cl-cc-title-wrap">
+                        <h3 className="cl-cc-title">
+                          {formatCampaignName(campaign.name)}
+                        </h3>
+                        <div className="cl-cc-meta-row">
+                          <span className="cl-cc-bot-chip">
+                            <i className="bi bi-cpu-fill"></i>
+                            {item.bot_count || 0} bots
+                          </span>
+                          <span className="cl-cc-model-chip">
+                            {item.model?.name || "N/A"}
+                          </span>
+                          <span
+                            className={`cl-cc-status ${isActive ? "active" : "paused"}`}
+                          >
+                            <span className="cl-cc-status-dot"></span>
+                            {item.status?.status_name || "Unknown"}
+                          </span>
+                        </div>
+                      </div>
+                      {expiryWarning && (
+                        <span className={`cl-cc-expiry cl-expiry-${expiryWarning.tone}`}>
+                          <i className="bi bi-clock-fill"></i>
+                          {expiryWarning.text}
                         </span>
-                      </span>
+                      )}
                     </div>
-                    <div className="metric-compact">
-                      <span className="metric-label-compact">Total Calls</span>
-                      <span className="metric-value-compact">
-                        {callStats?.total_calls?.toLocaleString() || 0}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="dates-right">
-                    <div className="date-compact">
-                      <span className="date-label-compact">
-                        <i className="bi bi-calendar3"></i>
-                        Start Date
-                      </span>
-                      <span className="date-value-compact">
-                        {formatDate(item.start_date)}
-                      </span>
-                    </div>
-                    <div className="date-compact expiry">
-                      <span className="date-label-compact">
-                        <i className="bi bi-calendar3"></i>
-                        Expiry Date
-                      </span>
-                      <span className="date-value-compact">
-                        {formatDate(item.end_date)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
 
-                <button
-                  className="view-dashboard-btn"
-                  onClick={() => window.location.href = `/dashboard?campaign_id=${item.id}&view=dashboard`}
-                >
-                  View Dashboard
-                  <i className="bi bi-grid-3x3-gap-fill"></i>
-                </button>
-              </div>
-            );
-          })}
+                    {/* Metrics grid */}
+                    <div className="cl-cc-metrics">
+                      <div className="cl-cc-metric">
+                        <div className="cl-cc-metric-label">Transferred Calls</div>
+                        <div className="cl-cc-metric-val">
+                          {callStats?.calls_transferred?.toLocaleString() || 0}
+                          <span className="cl-cc-pct">
+                            {callStats?.transfer_percentage || 0}%
+                          </span>
+                        </div>
+                      </div>
+                      <div className="cl-cc-metric">
+                        <div className="cl-cc-metric-label">Total Calls</div>
+                        <div className="cl-cc-metric-val">
+                          {callStats?.total_calls?.toLocaleString() || 0}
+                        </div>
+                      </div>
+                      <div className="cl-cc-metric">
+                        <div className="cl-cc-metric-label">
+                          <i className="bi bi-calendar3"></i> Start Date
+                        </div>
+                        <div className="cl-cc-metric-val cl-cc-date">
+                          {formatDate(item.start_date)}
+                        </div>
+                      </div>
+                      <div className="cl-cc-metric">
+                        <div className="cl-cc-metric-label">
+                          <i className="bi bi-calendar-event"></i> Expiry Date
+                        </div>
+                        <div className="cl-cc-metric-val cl-cc-date cl-cc-date-expiry">
+                          {formatDate(item.end_date)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Footer / action */}
+                    <button
+                      className="cl-cc-view-btn"
+                      onClick={() =>
+                        (window.location.href = `/dashboard?campaign_id=${item.id}&view=dashboard`)
+                      }
+                    >
+                      View Dashboard
+                      <i className="bi bi-arrow-right"></i>
+                    </button>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
     </>
@@ -481,564 +478,610 @@ const ClientLanding = () => {
 };
 
 const styles = `
-  @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css');
-  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+  @import url('https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css');
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+  * { box-sizing: border-box; }
 
-  body {
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    background-color: #F9FAFB;
-    color: #111827;
-    line-height: 1.3;
-    font-size: 14px;
-    padding: 1.5rem 0rem;
-    zoom: 0.75;
-  }
+  .cl-root {
+    --bg: #080c14;
+    --bg2: #0d1220;
+    --surface: rgba(255,255,255,0.05);
+    --surface-hov: rgba(255,255,255,0.08);
+    --surface-2: rgba(255,255,255,0.03);
+    --border: rgba(255,255,255,0.08);
+    --border-strong: rgba(255,255,255,0.14);
+    --text: rgba(255,255,255,0.92);
+    --text2: rgba(255,255,255,0.5);
+    --text3: rgba(255,255,255,0.28);
+    --accent: #0A84FF;
+    --accent-dim: rgba(10,132,255,0.15);
+    --success: #30D158;
+    --success-dim: rgba(48,209,88,0.14);
+    --warning: #FF9F0A;
+    --warning-dim: rgba(255,159,10,0.14);
+    --danger: #FF453A;
+    --danger-dim: rgba(255,69,58,0.14);
+    --indigo: #5E5CE6;
+    --card-shadow: 0 2px 24px rgba(0,0,0,0.4);
 
-  .container {
-    max-width: 1600px;
-    margin: 0 auto;
-    padding: 0 0.75rem;
-  }
-
-  /* Loading & Error States */
-  .loading-container,
-  .error-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
+    background: var(--bg);
+    color: var(--text);
     min-height: 100vh;
-    gap: 1rem;
-  }
-
-  }
-
-  .error-container i {
-    font-size: 3rem;
-    color: #DC2626;
-  }
-
-  .error-container p {
-    font-size: 1rem;
-    color: #6B7280;
-  }
-
-  .retry-btn {
-    padding: 0.625rem 1.25rem;
-    background-color: #4F46E5;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-  }
-
-  .retry-btn:hover {
-    background-color: #3730A3;
-  }
-
-  /* Header */
-  .header {
-    margin-bottom: 1.5rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .header h1 {
-    font-size: 1.875rem;
-    font-weight: 400;
-    color: #111827;
-    line-height: 1.2;
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-  }
-
-  .header .company-name {
-    color: #4F46E5;
-    font-weight: 500;
-  }
-
-  .role-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.375rem;
-    padding: 0.25rem 0.75rem;
-    background: #EDE9FE;
-    color: #7C3AED;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
-  }
-
-  /* Header Buttons */
-  .header-buttons {
-    display: flex;
-    gap: 0.75rem;
-  }
-  .request-campaign-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1rem;
-    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
-  }
-
-  .request-campaign-btn:hover {
-    background: linear-gradient(135deg, #059669 0%, #047857 100%);
-    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
-    transform: translateY(-2px);
-  }
-
-  .request-campaign-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
-  }
-
-  .request-campaign-btn i {
-    font-size: 1rem;
-  }
-
-  .manage-team-btn,
-  .logout-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.625rem 1rem;
-    border-radius: 8px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  }
-  
-
-  .manage-team-btn {
-    background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
-    color: white;
-    border: none;
-  }
-
-  .manage-team-btn:hover {
-    background: linear-gradient(135deg, #3730A3 0%, #6D28D9 100%);
-    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
-    transform: translateY(-2px);
-  }
-
-  .manage-team-btn:active {
-    transform: translateY(0);
-    box-shadow: 0 2px 8px rgba(79, 70, 229, 0.2);
-  }
-
-  .logout-btn {
-    background-color: white;
-    border: 1px solid #E5E7EB;
-    color: #6B7280;
-  }
-
-  .logout-btn:hover {
-    background-color: #F9FAFB;
-    border-color: #D1D5DB;
-    color: #4B5563;
-  }
-
-  .logout-btn:active {
-    background-color: #F3F4F6;
-    border-color: #9CA3AF;
-  }
-
-  .logout-btn i,
-  .manage-team-btn i {
-    font-size: 1rem;
-  }
-
-  /* Stats Cards */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .stat-card {
-    background: white;
-    border: 1px solid #F3F4F6;
-    border-radius: 12px;
-    padding: 1.25rem 1.25rem;
-  }
-
-  .stat-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-    min-height: 40px;
-  }
-
-  .stat-card-title {
-    font-size: 0.938rem;
-    color: #6B7280;
-    font-weight: 400;
-  }
-
-  .stat-icon-wrapper {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .stat-icon-wrapper.purple {
-    background: #EDE9FE;
-  }
-
-  .stat-icon-wrapper.green {
-    background: #D1FAE5;
-  }
-
-  .stat-icon-wrapper.yellow {
-    background: #FEF3C7;
-  }
-
-  .stat-icon-wrapper i {
-    font-size: 1.25rem;
-  }
-
-  .stat-icon-wrapper.purple i {
-    color: #7C3AED;
-  }
-
-  .stat-icon-wrapper.green i {
-    color: #10B981;
-  }
-
-  .stat-icon-wrapper.yellow i {
-    color: #F59E0B;
-  }
-
-  .stat-card-value {
-    font-size: 2rem;
-    font-weight: 400;
-    color: #111827;
-    line-height: 1;
-  }
-
-  /* Section Header */
-  .section-header {
-    margin-bottom: 1rem;
-  }
-
-  .section-header h2 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #111827;
-    line-height: 1.3;
-  }
-
-  /* Campaign Cards */
-  .campaigns-grid {
-    display: grid;
-    gap: 0.75rem;
-  }
-
-  .campaign-card {
-    background: white;
-    border: 1px solid #F3F4F6;
-    border-radius: 12px;
-    padding: 1rem 1.25rem;
-    transition: all 0.2s;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
     position: relative;
+    overflow-x: hidden;
+  }
+
+  /* Background blobs */
+  .cl-root .blob-wrap {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
     overflow: hidden;
   }
-
-  .campaign-card:hover {
-    border-color: #E5E7EB;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  .cl-root .blob {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(100px);
+    animation: cl-bdrift 14s ease-in-out infinite alternate;
+  }
+  .cl-root .blob1 {
+    width: 600px; height: 600px;
+    background: rgba(10,132,255,0.12);
+    top: -200px; left: -100px;
+  }
+  .cl-root .blob2 {
+    width: 400px; height: 400px;
+    background: rgba(94,92,230,0.1);
+    bottom: -100px; right: -100px;
+    animation-delay: -6s;
+  }
+  @keyframes cl-bdrift {
+    0% { transform: translate(0,0); }
+    100% { transform: translate(50px, 40px); }
   }
 
-  /* Expiry Warning Bar - Smaller */
-  .expiry-warning-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    padding: 0.3rem 1rem;
+  /* Loading */
+  .cl-loading {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    position: relative;
+    z-index: 1;
+  }
+  .cl-loading p { color: var(--text2); font-size: 14px; }
+
+  /* Error */
+  .cl-error-wrap {
+    min-height: 100vh;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.375rem;
-    color: white;
-    font-size: 0.7rem;
-    font-weight: 500;
-    margin-bottom: 0.5rem;
+    padding: 24px;
+    position: relative;
+    z-index: 1;
   }
-
-  .expiry-warning-bar i {
-    font-size: 0.7rem;
+  .cl-error-card {
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 22px;
+    padding: 32px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    box-shadow: var(--card-shadow);
   }
-
-  .expiry-warning-bar + .campaign-title-row {
-    margin-top: 1.75rem;
-  }
-
-  /* Row 1: Campaign Title with Count and Status */
-  .campaign-title-row {
+  .cl-error-icon {
+    width: 60px; height: 60px;
+    margin: 0 auto 16px;
+    border-radius: 50%;
+    background: var(--danger-dim);
+    color: var(--danger);
     display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 26px;
+  }
+  .cl-error-card h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 8px;
+  }
+  .cl-error-card p {
+    font-size: 13.5px;
+    color: var(--text2);
+    line-height: 1.55;
+    margin: 0 0 20px;
+  }
+  .cl-error-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  /* ─── TOPBAR ─── */
+  .cl-topbar {
+    display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
-    padding-bottom: 0.75rem;
-    border-bottom: 1px solid #E5E7EB;
+    padding: 0 32px;
+    height: 64px;
+    background: rgba(8,12,20,0.85);
+    backdrop-filter: blur(30px);
+    -webkit-backdrop-filter: blur(30px);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 50;
   }
-
-  .campaign-title-left {
+  .cl-topbar-left {
     display: flex;
     align-items: center;
-    gap: 1rem;
+    gap: 12px;
+  }
+  .cl-logo-icon {
+    width: 36px; height: 36px;
+    background: linear-gradient(135deg, #0A84FF, #5E5CE6);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(10,132,255,0.35);
+  }
+  .cl-brand {
+    font-size: 17px;
+    font-weight: 700;
+    letter-spacing: -0.4px;
+    color: var(--text);
+  }
+  .cl-brand span { color: var(--accent); }
+  .cl-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
   }
 
-  .campaign-name-large {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #111827;
-    line-height: 1.2;
-    margin: 0;
-  }
-
-  .bot-count {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #4F46E5;
-    padding: 0.25rem 0.75rem;
-    background: #EDE9FE;
-    border-radius: 6px;
-  }
-
-  .status-badge-large {
+  /* ─── BUTTONS ─── */
+  .cl-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    font-weight: 500;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.18s;
+    border: 1px solid transparent;
     white-space: nowrap;
   }
-
-  .status-badge-large.active {
-    background: #D1FAE5;
-    color: #059669;
+  .cl-btn i { font-size: 14px; }
+  .cl-btn-primary {
+    background: var(--accent);
+    color: #fff;
+    box-shadow: 0 4px 16px rgba(10,132,255,0.3);
+  }
+  .cl-btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  .cl-btn-success {
+    background: var(--success);
+    color: #0a1a0f;
+    box-shadow: 0 4px 16px rgba(48,209,88,0.25);
+  }
+  .cl-btn-success:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+  }
+  .cl-btn-ghost {
+    background: var(--surface);
+    border-color: var(--border);
+    color: var(--text2);
+  }
+  .cl-btn-ghost:hover {
+    background: var(--surface-hov);
+    color: var(--text);
+    border-color: var(--border-strong);
   }
 
-  .status-badge-large.paused {
-    background: #FEE2E2;
-    color: #DC2626;
+  /* ─── CONTENT ─── */
+  .cl-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 32px;
+    position: relative;
+    z-index: 1;
   }
 
-  .status-badge-large i {
-    font-size: 0.625rem;
-  }
-
-  /* Row 2: Model */
-  .campaign-model-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 0.75rem;
-    padding: 0.75rem;
-    background: #F9FAFB;
-    border-radius: 8px;
-  }
-
-  .model-label {
-    font-size: 0.875rem;
-    color: #6B7280;
-    font-weight: 400;
-  }
-
-  .model-value {
-    font-size: 0.875rem;
-    color: #111827;
-    font-weight: 600;
-  }
-
-  /* Row 3: Calls and Dates */
-  .campaign-metrics-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 1rem;
-    gap: 2rem;
-  }
-
-  .metrics-left {
-    display: flex;
-    gap: 2rem;
-    flex: 1;
-  }
-
-  .metric-compact {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .metric-label-compact {
-    font-size: 0.75rem;
-    color: #9CA3AF;
-    font-weight: 400;
-  }
-
-  .metric-value-compact {
-    font-size: 0.875rem;
-    color: #111827;
-    font-weight: 600;
-  }
-
-  .percentage-compact {
-    font-size: 0.75rem;
-    color: #10B981;
-    font-weight: 500;
-    margin-left: 0.25rem;
-  }
-
-  .dates-right {
-    display: flex;
-    gap: 2rem;
-    flex-shrink: 0;
-  }
-
-  .date-compact {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-
-  .date-label-compact {
-    font-size: 0.75rem;
-    color: #9CA3AF;
-    font-weight: 400;
+  /* ─── HERO ─── */
+  .cl-hero {
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 18px;
+    margin-bottom: 28px;
   }
-
-  .date-label-compact i {
-    font-size: 0.75rem;
-  }
-
-  .date-value-compact {
-    font-size: 0.875rem;
-    color: #111827;
-    font-weight: 500;
-  }
-
-  .date-compact.expiry .date-value-compact {
-    color: #F59E0B;
-    font-weight: 600;
-  }
-
-  /* View Dashboard Button */
-  .view-dashboard-btn {
-    width: 100%;
-    padding: 0.625rem 1rem;
-    background-color: #F9FAFB;
-    border: 1px solid #E5E7EB;
-    border-radius: 8px;
-    color: #4B5563;
-    font-size: 0.875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  .cl-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #0A84FF, #5E5CE6);
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    font-size: 20px;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+    box-shadow: 0 8px 24px rgba(10,132,255,0.3);
+  }
+  .cl-welcome {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 4px;
+  }
+  .cl-hero-title {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.8px;
+    color: var(--text);
+    margin: 0 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .cl-role-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    background: rgba(94,92,230,0.15);
+    color: var(--indigo);
+    border: 1px solid rgba(94,92,230,0.25);
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .cl-hero-sub {
+    font-size: 13px;
+    color: var(--text2);
   }
 
-  .view-dashboard-btn:hover {
-    background-color: #F3F4F6;
-    border-color: #D1D5DB;
-    color: #374151;
+  /* ─── STAT CARDS ─── */
+  .cl-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-bottom: 32px;
+  }
+  .cl-stat-card {
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    box-shadow: var(--card-shadow);
+    transition: all 0.2s;
+  }
+  .cl-stat-card:hover {
+    background: var(--surface-hov);
+    transform: translateY(-2px);
+  }
+  .cl-stat-label {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--text2);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .cl-stat-val {
+    font-size: 32px;
+    font-weight: 700;
+    letter-spacing: -1.2px;
+    color: var(--text);
+    line-height: 1.1;
+  }
+  .cl-stat-sub {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .cl-stat-sub i { font-size: 13px; }
+
+  /* ─── SECTION HEADER ─── */
+  .cl-section-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 16px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .cl-section-header h2 {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0;
+    letter-spacing: -0.3px;
+  }
+  .cl-section-sub {
+    font-size: 12.5px;
+    color: var(--text3);
+    margin-top: 4px;
+  }
+  .cl-section-count {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text2);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 4px 12px;
+    border-radius: 20px;
   }
 
-  .view-dashboard-btn:active {
-    background-color: #E5E7EB;
+  /* ─── CAMPAIGN CARDS ─── */
+  .cl-campaigns-grid {
+    display: grid;
+    gap: 14px;
   }
 
-  .view-dashboard-btn i {
-    font-size: 1rem;
+  .cl-empty {
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px dashed var(--border-strong);
+    border-radius: 18px;
+    padding: 60px 24px;
+    text-align: center;
+  }
+  .cl-empty i {
+    font-size: 42px;
+    color: var(--text3);
+    margin-bottom: 14px;
+  }
+  .cl-empty-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 6px;
+  }
+  .cl-empty-sub {
+    font-size: 13px;
+    color: var(--text3);
   }
 
-  /* Responsive */
+  .cl-campaign-card {
+    background: var(--surface);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 20px;
+    transition: all 0.2s;
+    box-shadow: var(--card-shadow);
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .cl-campaign-card:hover {
+    border-color: var(--border-strong);
+    background: var(--surface-hov);
+    transform: translateY(-1px);
+  }
+
+  .cl-cc-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+  .cl-cc-title-wrap {
+    flex: 1;
+    min-width: 0;
+  }
+  .cl-cc-title {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 8px;
+    letter-spacing: -0.3px;
+  }
+  .cl-cc-meta-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .cl-cc-bot-chip,
+  .cl-cc-model-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 3px 10px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--text2);
+  }
+  .cl-cc-bot-chip i { color: var(--warning); font-size: 11px; }
+  .cl-cc-model-chip { color: var(--text2); }
+
+  .cl-cc-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+  }
+  .cl-cc-status.active {
+    background: var(--success-dim);
+    color: var(--success);
+  }
+  .cl-cc-status.paused {
+    background: var(--danger-dim);
+    color: var(--danger);
+  }
+  .cl-cc-status-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 8px currentColor;
+  }
+
+  .cl-cc-expiry {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 11.5px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .cl-cc-expiry i { font-size: 10px; }
+  .cl-expiry-green { background: var(--success-dim); color: var(--success); }
+  .cl-expiry-amber { background: var(--warning-dim); color: var(--warning); }
+  .cl-expiry-red   { background: var(--danger-dim);  color: var(--danger); }
+
+  .cl-cc-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    padding: 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+  }
+  .cl-cc-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+  }
+  .cl-cc-metric-label {
+    font-size: 11px;
+    color: var(--text3);
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .cl-cc-metric-label i { font-size: 11px; }
+  .cl-cc-metric-val {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+    letter-spacing: -0.3px;
+  }
+  .cl-cc-pct {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--success);
+  }
+  .cl-cc-date {
+    font-size: 13.5px;
+    font-weight: 600;
+  }
+  .cl-cc-date-expiry { color: var(--warning); }
+
+  .cl-cc-view-btn {
+    width: 100%;
+    padding: 11px 16px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text2);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.18s;
+  }
+  .cl-cc-view-btn:hover {
+    background: var(--accent-dim);
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+  .cl-cc-view-btn i {
+    transition: transform 0.18s;
+  }
+  .cl-cc-view-btn:hover i {
+    transform: translateX(3px);
+  }
+
+  /* Scrollbar */
+  .cl-root ::-webkit-scrollbar { width: 6px; height: 6px; }
+  .cl-root ::-webkit-scrollbar-track { background: transparent; }
+  .cl-root ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 4px;
+  }
+
+  /* ─── RESPONSIVE ─── */
   @media (max-width: 1024px) {
-    .campaign-metrics-row {
-      flex-direction: column;
-      gap: 1rem;
-    }
-
-    .dates-right {
-      width: 100%;
-    }
+    .cl-stats-row { grid-template-columns: repeat(3, 1fr); }
+    .cl-cc-metrics { grid-template-columns: repeat(2, 1fr); }
   }
-
   @media (max-width: 768px) {
-    .header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 1rem;
+    .cl-topbar {
+      padding: 0 16px;
+      height: auto;
+      flex-wrap: wrap;
+      padding-top: 12px;
+      padding-bottom: 12px;
+      gap: 12px;
     }
-
-    .header-buttons {
+    .cl-topbar-right {
       width: 100%;
+      justify-content: flex-end;
+      flex-wrap: wrap;
     }
-
-    .manage-team-btn,
-    .logout-btn {
-      flex: 1;
-      justify-content: center;
-    }
-
-    .campaign-title-row {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.75rem;
-    }
-
-    .campaign-title-left {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 0.5rem;
-    }
-
-    .metrics-left,
-    .dates-right {
-      flex-direction: column;
-      gap: 0.75rem;
-    }
+    .cl-content { padding: 20px 16px; }
+    .cl-hero { flex-direction: column; align-items: flex-start; gap: 14px; }
+    .cl-hero-title { font-size: 22px; }
+    .cl-stats-row { grid-template-columns: 1fr; }
+    .cl-cc-metrics { grid-template-columns: repeat(2, 1fr); }
+    .cl-cc-header { flex-direction: column; }
+  }
+  @media (max-width: 480px) {
+    .cl-cc-metrics { grid-template-columns: 1fr; }
+    .cl-btn { padding: 7px 12px; font-size: 12.5px; }
   }
 `;
 
