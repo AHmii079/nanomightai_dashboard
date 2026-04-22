@@ -333,6 +333,8 @@ const LoginPage = () => {
           border-radius: 10px;
           font-size: 13px;
           color: rgba(255, 255, 255, 0.92);
+          caret-color: rgba(255, 255, 255, 0.92);
+          color-scheme: dark;
           font-family: inherit;
           transition: all 0.2s ease;
         }
@@ -349,11 +351,16 @@ const LoginPage = () => {
 
         .form-input:-webkit-autofill,
         .form-input:-webkit-autofill:hover,
-        .form-input:-webkit-autofill:focus {
+        .form-input:-webkit-autofill:focus,
+        .form-input:-webkit-autofill:active,
+        .form-input:autofill {
           -webkit-text-fill-color: rgba(255, 255, 255, 0.96) !important;
-          -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.08) inset !important;
-          box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.08) inset !important;
-          transition: background-color 9999s ease-in-out 0s;
+          caret-color: rgba(255, 255, 255, 0.96) !important;
+          -webkit-box-shadow: 0 0 0px 1000px rgba(16, 21, 36, 0.92) inset !important;
+          box-shadow: 0 0 0px 1000px rgba(16, 21, 36, 0.92) inset !important;
+          border: 1px solid rgba(255, 255, 255, 0.08) !important;
+          -webkit-background-clip: padding-box;
+          transition: background-color 9999s ease-in-out 0s, color 9999s ease-in-out 0s;
         }
 
         .form-input::-ms-reveal,
