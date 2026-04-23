@@ -690,6 +690,11 @@ const MedicareDashboard = () => {
 
   const totalTransferred = aGradeCount + bGradeCount;
 
+  const transferredPercentageVal =
+    totalCalls > 0
+      ? Math.round((totalTransferred / totalCalls) * 100)
+      : 0;
+
   const aGradePercentageVal =
     totalCalls > 0
       ? Math.round((aGradeCount / totalCalls) * 100)
@@ -1520,15 +1525,14 @@ const MedicareDashboard = () => {
             {/* Metric Cards */}
             <div style={{
               display: "grid",
-              gridTemplateColumns: "repeat(4, 1fr)",
+              gridTemplateColumns: "repeat(3, 1fr)",
               gap: "16px",
               marginBottom: "24px",
             }}>
               {[
-                { label: "TOTAL CALLS", value: totalCalls, sub: `Today · All lists`, accent: "+12.4%", accentColor: "#34d399", borderColor: "#34d399" },
-                { label: "QUALIFIED", value: qualifiedCount, sub: `${qualifiedPercentage}% of total`, accent: `${qualifiedPercentage}%`, accentColor: "#3b82f6", borderColor: "#3b82f6" },
+                { label: "TOTAL CALLS", value: totalCalls, sub: `Today · All lists`, accent: "", accentColor: "#34d399", borderColor: "#34d399" },
+                { label: "TRANSFERRED", value: totalTransferred, sub: `${transferredPercentageVal}% of total`, accent: `${transferredPercentageVal}%`, accentColor: "#3b82f6", borderColor: "#3b82f6" },
                 { label: "DROPPED CALLS", value: droppedCount, sub: `${droppedPercentageVal}% of total`, accent: `-${droppedPercentageVal}%`, accentColor: "#f87171", borderColor: "#f87171" },
-                { label: "A GRADE TRANSFERS", value: aGradeCount, sub: `${aGradePercentageVal}% conversion`, accent: `+3.1%`, accentColor: "#34d399", borderColor: "#34d399" },
               ].map((card, idx) => (
                 <div
                   key={idx}
