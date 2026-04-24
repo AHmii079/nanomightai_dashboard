@@ -1859,7 +1859,7 @@ const MedicareDashboard = () => {
                             gap: "6px",
                           }}
                         >
-                          Response Category
+                          Disposition
                           {sortColumn === "category" && (
                             <i
                               className={`bi bi-chevron-${sortDirection === "asc" ? "up" : "down"
@@ -2288,7 +2288,7 @@ const MedicareDashboard = () => {
                         marginBottom: "4px",
                       }}
                     >
-                      Response Category
+                      Disposition
                     </div>
                     <div>
                       <span
