@@ -1,44 +1,43 @@
 .daterangepicker-container {
   position: relative;
-  width: 100%;
 }
 
 .picker-input-wrapper {
   display: flex;
   align-items: center;
-  width: 100%;
-  padding: 10px 14px;
+  padding: 5px 12px;
   border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 8px;
-  font-size: 13px;
+  border-radius: 6px;
+  font-size: 12px;
   font-weight: 500;
-  background: rgba(30, 41, 59, 0.7);
-  color: #e2e8f0;
+  background: rgba(30, 41, 59, 0.8);
+  color: #94a3b8;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.15s;
+  white-space: nowrap;
+  gap: 6px;
 }
 
 .picker-input-wrapper:hover {
+  color: #e2e8f0;
   border-color: rgba(255,255,255,0.15);
 }
 
 .picker-icon {
   color: #94a3b8;
-  margin-right: 10px;
+  font-size: 12px;
 }
 
 .picker-value {
-  flex: 1;
-  color: #f1f5f9;
+  color: #94a3b8;
+  font-size: 12px;
   font-weight: 500;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
 }
 
 .picker-caret {
   color: #64748b;
-  font-size: 12px;
+  font-size: 10px;
 }
 
 .picker-popover {

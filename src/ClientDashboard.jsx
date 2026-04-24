@@ -27,6 +27,7 @@ const MedicareDashboard = () => {
   const [selectedOutcomes, setSelectedOutcomes] = useState([]);
   const [searchText, setSearchText] = useState("");
   const [listId, setListId] = useState("");
+  const [quickTimeFilter, setQuickTimeFilter] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endDate, setEndDate] = useState("");
@@ -850,8 +851,48 @@ const MedicareDashboard = () => {
     setEndTime("");
     setSelectedOutcomes([]);
     setTimeRange("");
+    setQuickTimeFilter("all");
     setCurrentPage(1);
     // Filters will auto-apply due to useEffect dependencies
+  };
+
+  // Quick time filter handler — computes date/time in NY timezone and sets API filter states
+  const handleQuickTimeFilter = (value) => {
+    setQuickTimeFilter(value);
+    if (value === "all") {
+      // Revert to today with no time bounds (same as mount default)
+      setStartDate(new Date().toISOString().split("T")[0]);
+      setStartTime("");
+      setEndDate("");
+      setEndTime("");
+      return;
+    }
+
+    const minutesMap = {
+      "5min": 5,
+      "15min": 15,
+      "30min": 30,
+      "1hour": 60,
+    };
+    const minutes = minutesMap[value];
+    if (!minutes) return;
+
+    // Get current moment in New York time
+    const nowNY = new Date(
+      new Date().toLocaleString("en-US", { timeZone: "America/New_York" })
+    );
+    const pastNY = new Date(nowNY.getTime() - minutes * 60 * 1000);
+
+    const fmtDate = (d) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const fmtTime = (d) =>
+      `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+
+    setStartDate(fmtDate(pastNY));
+    setStartTime(fmtTime(pastNY));
+    setEndDate(fmtDate(nowNY));
+    setEndTime(fmtTime(nowNY));
+    setCurrentPage(1);
   };
 
   // Handle column sorting
@@ -1566,81 +1607,121 @@ const MedicareDashboard = () => {
                 </div>
               ))}
             </div>
-            {/* Search & Filter Bar */}
+            {/* Search & Filter Bar — unified pill */}
             <div style={{
               display: "flex",
               alignItems: "center",
-              gap: "12px",
               marginBottom: "24px",
-              flexWrap: "wrap",
+              background: "rgba(15, 23, 42, 0.75)",
+              border: "1px solid rgba(255,255,255,0.07)",
+              borderRadius: "10px",
+              backdropFilter: "blur(12px)",
+              height: "44px",
+              position: "relative",
             }}>
-              <div style={{ position: "relative", flex: 1, minWidth: "260px" }}>
-                <i className="bi bi-search" style={{
-                  position: "absolute",
-                  left: "12px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  color: "#64748b",
-                  fontSize: "14px",
-                }}></i>
+              {/* Quick Time Filter */}
+              <div style={{ position: "relative", display: "flex", alignItems: "center", padding: "0 4px 0 14px", flexShrink: 0 }}>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: "#475569", letterSpacing: "0.06em", textTransform: "uppercase", marginRight: "6px", userSelect: "none" }}>
+                  TIME
+                </span>
+                <select
+                  value={quickTimeFilter}
+                  onChange={(e) => handleQuickTimeFilter(e.target.value)}
+                  style={{
+                    appearance: "none",
+                    WebkitAppearance: "none",
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    color: quickTimeFilter !== "all" ? "#60a5fa" : "#94a3b8",
+                    fontSize: "13px",
+                    fontWeight: 500,
+                    cursor: "pointer",
+                    paddingRight: "20px",
+                    fontFamily: "inherit",
+                  }}
+                >
+                  <option value="all" style={{ background: "#1e293b" }}>All time</option>
+                  <option value="5min" style={{ background: "#1e293b" }}>Last 5 mins</option>
+                  <option value="15min" style={{ background: "#1e293b" }}>Last 15 mins</option>
+                  <option value="30min" style={{ background: "#1e293b" }}>Last 30 mins</option>
+                  <option value="1hour" style={{ background: "#1e293b" }}>Last Hour</option>
+                </select>
+                <i className="bi bi-chevron-down" style={{ position: "absolute", right: "6px", fontSize: "10px", color: "#475569", pointerEvents: "none" }} />
+              </div>
+
+              {/* Divider */}
+              <div style={{ width: "1px", height: "22px", background: "rgba(255,255,255,0.08)", flexShrink: 0 }} />
+
+              {/* Search */}
+              <div style={{ position: "relative", flex: 1, display: "flex", alignItems: "center", minWidth: 0 }}>
+                <i className="bi bi-search" style={{ position: "absolute", left: "14px", color: "#475569", fontSize: "13px", pointerEvents: "none" }} />
                 <input
                   type="text"
-                  style={styles.searchInput}
                   placeholder="Search phone number, call ID, category..."
                   value={searchText}
                   onChange={(e) => setSearchText(e.target.value)}
+                  style={{
+                    width: "100%",
+                    background: "transparent",
+                    border: "none",
+                    outline: "none",
+                    color: "#e2e8f0",
+                    fontSize: "13px",
+                    padding: "0 14px 0 36px",
+                    fontFamily: "inherit",
+                    boxSizing: "border-box",
+                  }}
                 />
               </div>
-              <div style={{ position: "relative", minWidth: "160px" }}>
-                <span style={{
-                  position: "absolute",
-                  left: "12px",
-                  top: "50%",
-                  transform: "translateY(-50%)",
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  color: "#64748b",
-                  letterSpacing: "0.04em",
-                }}>LIST</span>
-                <input
-                  type="text"
-                  style={{ ...styles.searchInput, paddingLeft: "42px", flex: "none", width: "100%" }}
-                  placeholder="Any list ID..."
-                  value={listId}
-                  onChange={(e) => setListId(e.target.value)}
-                />
-              </div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+
+              {/* Divider */}
+              <div style={{ width: "1px", height: "22px", background: "rgba(255,255,255,0.08)", flexShrink: 0 }} />
+
+              {/* Date Range Picker */}
+              <div style={{ display: "flex", alignItems: "center", padding: "0 8px", flexShrink: 0 }}>
                 <DateRangePicker
                   startDate={startDate}
-                  setStartDate={setStartDate}
+                  setStartDate={(v) => { setStartDate(v); setQuickTimeFilter("all"); }}
                   endDate={endDate}
-                  setEndDate={setEndDate}
+                  setEndDate={(v) => { setEndDate(v); setQuickTimeFilter("all"); }}
                   startTime={startTime}
-                  setStartTime={setStartTime}
+                  setStartTime={(v) => { setStartTime(v); setQuickTimeFilter("all"); }}
                   endTime={endTime}
-                  setEndTime={setEndTime}
+                  setEndTime={(v) => { setEndTime(v); setQuickTimeFilter("all"); }}
                 />
               </div>
-              <button
-                onClick={handleReset}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "6px",
-                  color: "#94a3b8",
-                  background: "rgba(30, 41, 59, 0.7)",
-                  border: "1px solid rgba(255,255,255,0.08)",
-                  borderRadius: "8px",
-                  cursor: "pointer",
-                  fontSize: "13px",
-                  fontWeight: 500,
-                  padding: "10px 16px",
-                }}
-              >
-                <i className="bi bi-arrow-clockwise"></i>
-                Reset
-              </button>
+
+              {/* Divider */}
+              <div style={{ width: "1px", height: "22px", background: "rgba(255,255,255,0.08)", flexShrink: 0 }} />
+
+              {/* Reset */}
+              <div style={{ padding: "0 8px", flexShrink: 0 }}>
+                <button
+                  onClick={handleReset}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "5px",
+                    color: "#94a3b8",
+                    background: "rgba(30, 41, 59, 0.8)",
+                    border: "1px solid rgba(255,255,255,0.08)",
+                    borderRadius: "6px",
+                    cursor: "pointer",
+                    fontSize: "12px",
+                    fontWeight: 500,
+                    padding: "5px 12px",
+                    fontFamily: "inherit",
+                    whiteSpace: "nowrap",
+                    transition: "all 0.15s",
+                  }}
+                  onMouseOver={(e) => { e.currentTarget.style.color = "#e2e8f0"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.15)"; }}
+                  onMouseOut={(e) => { e.currentTarget.style.color = "#94a3b8"; e.currentTarget.style.borderColor = "rgba(255,255,255,0.08)"; }}
+                >
+                  <i className="bi bi-arrow-clockwise" style={{ fontSize: "12px" }}></i>
+                  Reset
+                </button>
+              </div>
             </div>
 
 
