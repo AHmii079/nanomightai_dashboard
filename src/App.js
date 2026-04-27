@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import PageTitleUpdater from './PageTitleUpdater';
 
 import ClientDashboard from './ClientDashboard';
+import ClientLanding from './ClientLanding';
 import Login from './login';
 import ClientRecordings from './Clientrecordings';
 import IntegrationForm from './IntegrationForm';
@@ -33,6 +34,7 @@ function App() {
                 <Route path="/" element={<Login />} />
 
                 {/* Client Routes */}
+                <Route path="/client-landing" element={<ClientLanding />} />
                 <Route path="/dashboard" element={<ClientDashboard />} />
                 <Route path="/recordings" element={<ClientRecordings />} />
                 <Route path="/request-campaign" element={<RequestCampaign />} />

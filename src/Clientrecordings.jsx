@@ -48,7 +48,7 @@ const ClientRecordings = ({ isEmbedded }) => {
       setLoading(true);
       setError(null);
     } else {
-      window.location.href = '/dashboard?view=dashboard';
+      window.location.href = '/client-landing';
     }
   }, [location.search]);
 

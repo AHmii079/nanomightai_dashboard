@@ -113,42 +113,6 @@ const LoginPage = () => {
       localStorage.setItem("username", data.username);
       localStorage.setItem("role", data.role);
 
-      const redirectToClientDashboard = async () => {
-        try {
-          let clientId = data.user_id;
-
-          if (data.role === "client_member") {
-            const empRes = await fetch("https://api.xlitecore.xdialnetworks.com/api/v1/client/campaigns/employer", {
-              headers: { Authorization: `Bearer ${data.access_token}` }
-            });
-
-            if (empRes.ok) {
-              const empData = await empRes.json();
-              clientId = empData.client_id;
-            }
-          }
-
-          if (clientId) {
-            const campRes = await fetch(`https://api.xlitecore.xdialnetworks.com/api/v1/client/campaigns/${clientId}`, {
-              headers: { Authorization: `Bearer ${data.access_token}` }
-            });
-
-            if (campRes.ok) {
-              const campData = await campRes.json();
-              if (campData?.campaigns?.length > 0) {
-                const campaignId = campData.campaigns[0].id;
-                window.location.href = `/dashboard?campaign_id=${campaignId}&view=dashboard`;
-                return;
-              }
-            }
-          }
-        } catch (e) {
-          console.error("Error fetching initial campaign", e);
-        }
-
-        window.location.href = "/dashboard?view=dashboard";
-      };
-
       // Redirect based on user role
       if (data.role === "admin" || data.role === "onboarding" || data.role === "qa") {
         setTimeout(() => {
@@ -157,7 +121,7 @@ const LoginPage = () => {
       } else {
         if (data.role === "client" || data.role === "client_member") {
           setTimeout(() => {
-            void redirectToClientDashboard();
+            window.location.href = "/client-landing";
           }, 1500);
         }
       }

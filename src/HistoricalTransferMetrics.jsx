@@ -26,7 +26,7 @@ const HistoricalTransferMetrics = () => {
                 setIsAdminView(true);
             }
         } else {
-            navigate('/dashboard?view=dashboard');
+            navigate('/client-landing');
         }
     }, [location.search, navigate]);
 
@@ -111,7 +111,7 @@ const HistoricalTransferMetrics = () => {
 
     const handleBack = () => {
         if (!campaignId) {
-            navigate('/dashboard?view=dashboard');
+            navigate('/client-landing');
             return;
         }
 
